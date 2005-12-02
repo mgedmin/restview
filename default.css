@@ -5,6 +5,12 @@ body {
 p {
     text-align: justify;
 }
+dt {
+    font-weight: bold;
+}
+dd {
+    margin-bottom: 1em;
+}
 pre.doctest-block {
     color: #008000;
 }
