@@ -39,24 +39,38 @@ class RestViewer:
         vbox = gtk.VBox()
         self.win.add(vbox)
 
-        main_menu = gtk.MenuBar()
+
+        actions = gtk.ActionGroup("Actions")
+        actions.add_actions([
+                    # action, stockid, label[, accelerator, tooltip, action]
+                    ("FileMenu", None, "_File"),
+                    ("ViewMenu", None, "_View"),
+                    ("ViewMenu", None, "_View"),
+                    ("Quit", gtk.STOCK_QUIT, "_Quit", "<control>Q",
+                        "Quit",
+                        lambda action: gtk.main_quit()),
+                    ("Reload", gtk.STOCK_REFRESH, "_Reload", "<control>R",
+                        "Reload",
+                        self.on_refresh),
+                ])
+
+        ui = gtk.UIManager()
+        ui.insert_action_group(actions, 0)
+        self.win.add_accel_group(ui.get_accel_group())
+        ui.add_ui_from_string("""
+            <ui>
+              <menubar name='MenuBar'>
+                <menu action='FileMenu'>
+                  <menuitem action='Quit'/>
+                </menu>
+                <menu action='ViewMenu'>
+                  <menuitem action='Reload'/>
+                </menu>
+              </menubar>
+            </ui>
+        """)
+        main_menu = ui.get_widget("/MenuBar")
         vbox.pack_start(main_menu, False)
-
-        file_menu = gtk.MenuItem("_File")
-        main_menu.add(file_menu)
-        menu = gtk.Menu()
-        file_menu.set_submenu(menu)
-        exit = gtk.MenuItem("E_xit")
-        exit.connect("activate", lambda *args: gtk.main_quit())
-        menu.add(exit)
-
-        view_menu = gtk.MenuItem("_View")
-        main_menu.add(view_menu)
-        menu = gtk.Menu()
-        view_menu.set_submenu(menu)
-        refresh = gtk.MenuItem("_Refresh")
-        refresh.connect("activate", self.on_refresh)
-        menu.add(refresh)
 
         self.moz = gtkmozembed.MozEmbed()
         vbox.pack_start(self.moz)
