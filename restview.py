@@ -28,7 +28,8 @@ def path2fileurl(filename):
 class RestViewer:
 
     default_title = "(untitled)"
-    css_path = os.path.join(os.path.dirname(__file__), 'default.css')
+    css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            'default.css')
 
     def __init__(self):
         self._build_ui()
