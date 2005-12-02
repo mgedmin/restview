@@ -5,3 +5,6 @@ body {
 p {
     text-align: justify;
 }
+pre.doctest-block {
+    color: #008000;
+}
