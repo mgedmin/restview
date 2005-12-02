@@ -55,7 +55,7 @@ class RestViewer:
                     ("Reload", gtk.STOCK_REFRESH, "_Reload", "<control>R",
                         "Reload",
                         self.on_refresh),
-                    ("ViewSource", None, "_Source", "<control>U",
+                    ("ViewSource", None, "HTML S_ource", "<control>U",
                         "View HTML document source",
                         self.on_view_source),
                 ])
