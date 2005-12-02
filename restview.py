@@ -10,9 +10,11 @@ Needs PyGtk, gnome-python-extras and docutils.
 
 import os
 import sys
+import re
+import cgi
+import urllib
 import gtk
 import gtk.gdk
-import urllib
 import gtkmozembed
 import docutils.core
 import docutils.writers.html4css1
@@ -31,6 +33,7 @@ class RestViewer:
     def __init__(self):
         self._build_ui()
         self.filename = None
+        self.html_data = ""
 
     def _build_ui(self):
         # TODO: use glade
@@ -52,6 +55,9 @@ class RestViewer:
                     ("Reload", gtk.STOCK_REFRESH, "_Reload", "<control>R",
                         "Reload",
                         self.on_refresh),
+                    ("ViewSource", None, "_Source", "<control>U",
+                        "View HTML document source",
+                        self.on_view_source),
                 ])
 
         ui = gtk.UIManager()
@@ -65,6 +71,7 @@ class RestViewer:
                 </menu>
                 <menu action='ViewMenu'>
                   <menuitem action='Reload'/>
+                  <menuitem action='ViewSource'/>
                 </menu>
               </menubar>
             </ui>
@@ -83,6 +90,19 @@ class RestViewer:
         if self.filename:
             self.render_rest_file(self.filename)
 
+    def on_view_source(self, *args):
+        source = cgi.escape(self.html_data)
+        source = re.sub('(&lt;.*?&gt;)', r'<span class="tag">\1</span>',
+                        source)
+        source = """
+            <html><head><title>HTML Source of %s</title></head>
+            <style type="text/css">
+            span.tag { color: #800080; }
+            </style>
+            <body><pre>%s</pre></body></html>
+        """ % (self.filename, source)
+        self.render_html_data(source)
+
     def update_title(self, mozwidget):
         title = self.moz.get_title()
         if not title:
@@ -90,12 +110,14 @@ class RestViewer:
         self.win.set_title(title + " - ReST Viewer")
 
     def render_html_data(self, html_data, baseurl='file:///'):
+        if isinstance(html_data, unicode):
+            html_data = html_data.encode('UTF-8')
         self.moz.render_data(html_data, long(len(html_data)), baseurl,
                              'text/html')
 
     def render_rest_data(self, rest_data, baseurl='file:///'):
-        html_data = self.rest_to_html(rest_data)
-        self.render_html_data(html_data, baseurl)
+        self.html_data = self.rest_to_html(rest_data)
+        self.render_html_data(self.html_data, baseurl)
 
     def render_rest_file(self, filename):
         self.default_title = os.path.basename(filename)
