@@ -14,3 +14,7 @@ dd {
 pre.doctest-block {
     color: #008000;
 }
+pre.literal-block {
+    color: #AA4400;
+    margin-left: 40px;
+}
