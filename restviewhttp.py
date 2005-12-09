@@ -85,16 +85,16 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         files = [fn for fn in os.listdir(dirname)
                  if fn.endswith('.txt') or fn.endswith('.rst')]
         files.sort()
-        html = self.render_dir_listing(dirname, files)
+        html = self.render_dir_listing('RST files in %s' % dirname, files)
         self.send_response(200)
         self.send_header("Content-type", "text/html; charset=UTF-8")
         self.send_header("Content-Length", str(len(html)))
         self.end_headers()
         return html
 
-    def render_dir_listing(self, dirname, files):
+    def render_dir_listing(self, title, files):
         files = ''.join([FILE_TEMPLATE.replace('$file', fn) for fn in files])
-        return DIR_TEMPLATE.replace('$title', dirname).replace('$files', files)
+        return DIR_TEMPLATE.replace('$title', title).replace('$files', files)
 
 
 DIR_TEMPLATE = """\
