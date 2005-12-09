@@ -69,7 +69,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def handle_rest_file(self, filename):
         try:
             html = self.server.renderer.render_rest_file(filename)
-        except IOError:
+        except IOError, e:
+            self.log_error("%s" % e)
             self.send_error(404, "File not found")
         else:
             self.send_response(200)
