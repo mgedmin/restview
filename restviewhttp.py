@@ -34,8 +34,26 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET_or_HEAD(self):
         if self.path == '/':
             return self.handle_rest_file(self.server.renderer.filename)
+        elif self.path.endswith('.png') and '..' not in self.path:
+            return self.handle_image(self.translate_path(), 'image/png')
         else:
             self.send_error(404, "File not found")
+
+    def translate_path(self):
+        basedir = os.path.dirname(self.server.renderer.filename)
+        return os.path.join(basedir, self.path[1:])
+
+    def handle_image(self, filename, ctype):
+        try:
+            data = file(filename, 'rb').read()
+        except IOError:
+            self.send_error(404, "File not found")
+        else:
+            self.send_response(200)
+            self.send_header("Content-type", ctype)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            return data
 
     def handle_rest_file(self, filename):
         try:
