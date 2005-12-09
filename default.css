@@ -12,6 +12,13 @@ p {
     text-align: justify;
 }
 
+/* Monospace text */
+
+tt {
+    font-family: Andale Mono, Courier New, monospace;
+    color: #234F32;
+}
+
 /* Definition lists */
 
 dt {
@@ -84,6 +91,11 @@ a.fn-backref {
     font-size: xx-small;
     vertical-align: super;
     line-height: normal;
+    text-decoration: none;
+}
+a.footnote-reference:hover,
+a.fn-backref:hover {
+    text-decoration: underline;
 }
 
 table.footnote {
