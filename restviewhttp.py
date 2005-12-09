@@ -4,6 +4,8 @@ HTTP-based ReStructuredText viewer.
 
 Usage:
     restviewhttp filename.rst
+or
+    restviewhttp directory
 
 Needs docutils and a web browser.
 """
@@ -33,9 +35,16 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET_or_HEAD(self):
         if self.path == '/':
-            return self.handle_rest_file(self.server.renderer.filename)
-        elif self.path.endswith('.png') and '..' not in self.path:
+            if os.path.isdir(self.server.renderer.filename):
+                return self.handle_dir(self.server.renderer.filename)
+            else:
+                return self.handle_rest_file(self.server.renderer.filename)
+        elif '..' in self.path:
+            self.send_error(404, "File not found") # no hacking!
+        elif self.path.endswith('.png'):
             return self.handle_image(self.translate_path(), 'image/png')
+        elif self.path.endswith('.txt') or self.path.endswith('.rst'):
+            return self.handle_rest_file(self.translate_path())
         else:
             self.send_error(404, "File not found")
 
@@ -66,6 +75,43 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(html)))
             self.end_headers()
             return html
+
+    def handle_dir(self, dirname):
+        try:
+            files = os.listdir(dirname)
+        except OSError:
+            self.send_error(404, "File not found")
+            return
+        files = [fn for fn in os.listdir(dirname)
+                 if fn.endswith('.txt') or fn.endswith('.rst')]
+        files.sort()
+        html = self.render_dir_listing(dirname, files)
+        self.send_response(200)
+        self.send_header("Content-type", "text/html; charset=UTF-8")
+        self.send_header("Content-Length", str(len(html)))
+        self.end_headers()
+        return html
+
+    def render_dir_listing(self, dirname, files):
+        files = ''.join([FILE_TEMPLATE.replace('$file', fn) for fn in files])
+        return DIR_TEMPLATE.replace('$title', dirname).replace('$files', files)
+
+
+DIR_TEMPLATE = """\
+<html>
+<head><title>$title</title></head>
+<body>
+<h1>$title</h1>
+<ul>
+  $files
+</ul>
+</body>
+</html>
+"""
+
+FILE_TEMPLATE = """\
+  <li><a href="$file">$file</a></li>\
+"""
 
 
 class RestViewer(object):
@@ -114,7 +160,7 @@ class RestViewer(object):
 
 def main():
     if len(sys.argv) < 2:
-        print >> sys.stderr, "Usage: %s filename" % sys.argv[0]
+        print >> sys.stderr, "Usage: %s pathname" % sys.argv[0]
     server = RestViewer(sys.argv[1])
     port = server.listen()
     url = 'http://localhost:%d/' % port
