@@ -1,23 +1,40 @@
+/* Stylesheet for ReStructuredText by Marius Gedminas.
+ * (I didn't like the default one)
+ */
+
 body {
     font-family: Verdana, sans;
-    margin: 1em;
+    margin: 3em;
+    max-width: 50em;
 }
+
 p {
     text-align: justify;
 }
+
+/* Definition lists */
+
 dt {
     font-weight: bold;
 }
 dd {
     margin-bottom: 1em;
 }
+
+/* Doctest blocks */
+
 pre.doctest-block {
     color: #008000;
 }
+
+/* Literal blocks */
+
 pre.literal-block {
     color: #AA4400;
     margin-left: 40px;
 }
+
+/* Tables */
 
 table {
     border-top: 2px solid black;
@@ -34,6 +51,7 @@ th {
     border-left: hidden;
     border-right: hidden;
     border-bottom: none;
+    text-align: left;
 }
 tr:first-child td {
     border-top: 1px solid black;
@@ -44,4 +62,47 @@ td {
     border-right: hidden;
     border-bottom: none;
     padding: 1px 4px;
+}
+td, th {
+    padding-left: 1em;
+}
+td:first-child,
+th:first-child {
+    padding-left: 4px;
+}
+
+/* Footnotes */
+
+a.footnote-reference,
+a.fn-backref {
+    font-size: xx-small;
+    vertical-align: super;
+    line-height: normal;
+}
+
+table.footnote {
+    border: none;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: 20px;
+    margin-right: 0.5em;
+    font-size: small;
+}
+table.footnote td {
+    border: none;
+    padding-top: 1em;
+    padding-left: 0px;
+}
+table.footnote td.label {
+    border-top: 1px solid #eee;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+table.footnote + table.footnote {
+    margin-top: 0;
+}
+table.footnote + table.footnote td {
+    border: none;
+    padding-top: 0;
 }
