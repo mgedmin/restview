@@ -49,8 +49,10 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_error(404, "File not found")
 
     def translate_path(self):
-        basedir = os.path.dirname(self.server.renderer.filename)
-        return os.path.join(basedir, self.path[1:])
+        basedir = self.server.renderer.filename
+        if not os.path.isdir(basedir):
+            basedir = os.path.dirname(basedir)
+        return os.path.join(basedir, self.path.lstrip('/'))
 
     def handle_image(self, filename, ctype):
         try:
@@ -77,13 +79,16 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             return html
 
     def handle_dir(self, dirname):
-        try:
-            files = os.listdir(dirname)
-        except OSError:
-            self.send_error(404, "File not found")
-            return
-        files = [fn for fn in os.listdir(dirname)
-                 if fn.endswith('.txt') or fn.endswith('.rst')]
+        if not dirname.endswith('/'):
+            dirname += '/'
+        files = []
+        for dirpath, dirnames, filenames in os.walk(dirname):
+            if '.svn' in dirnames:
+                dirnames.remove('.svn')
+            for fn in filenames:
+                if fn.endswith('.txt') or fn.endswith('.rst'):
+                    prefix = dirpath[len(dirname):]
+                    files.append(os.path.join(prefix, fn))
         files.sort()
         html = self.render_dir_listing('RST files in %s' % dirname, files)
         self.send_response(200)
