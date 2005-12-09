@@ -36,7 +36,7 @@ pre.literal-block {
 
 /* Indented quotations */
 
-blockquote {
+blockquote > p {
     color: #000080;
 }
 
