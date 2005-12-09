@@ -34,6 +34,12 @@ pre.literal-block {
     margin-left: 40px;
 }
 
+/* Indented quotations */
+
+blockquote {
+    color: #000080;
+}
+
 /* Tables */
 
 table {
@@ -105,4 +111,20 @@ table.footnote + table.footnote {
 table.footnote + table.footnote td {
     border: none;
     padding-top: 0;
+}
+
+/* System messages (aka errors) */
+
+div.system-message {
+    border-left: 3px double red;
+    margin-left: 19px;
+    padding-left: 19px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: red;
+}
+
+div.system-message p.system-message-title {
+    margin-top: 0;
+    font-weight: bold;
 }
