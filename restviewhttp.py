@@ -160,6 +160,7 @@ class RestViewer(object):
         docutils.core.publish_string(rest_input, writer=writer,
                                      settings_overrides={
                                         'stylesheet': self.css_path,
+                                        'stylesheet_path': None,
                                         'embed_stylesheet': True})
         return writer.output
 
