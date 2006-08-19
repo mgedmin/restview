@@ -73,6 +73,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.log_error("%s" % e)
             self.send_error(404, "File not found")
         else:
+            if isinstance(html, unicode):
+                html = html.encode('UTF-8')
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=UTF-8")
             self.send_header("Content-Length", str(len(html)))
@@ -92,6 +94,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     files.append(os.path.join(prefix, fn))
         files.sort()
         html = self.render_dir_listing('RST files in %s' % dirname, files)
+        if isinstance(html, unicode):
+            html = html.encode('UTF-8')
         self.send_response(200)
         self.send_header("Content-type", "text/html; charset=UTF-8")
         self.send_header("Content-Length", str(len(html)))
