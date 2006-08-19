@@ -56,7 +56,7 @@ table {
     border-right: none;
     border-collapse: collapse;
 }
-tr:first-child th {
+tr:first-child > th {
     border-top: none;
 }
 th {
@@ -66,8 +66,11 @@ th {
     border-bottom: none;
     text-align: left;
 }
-tr:first-child td {
+tr:first-child > td {
     border-top: 1px solid black;
+}
+table[rules=none] tr:first-child > td {
+    border-top: none;
 }
 td {
     border-top: hidden;
@@ -82,6 +85,10 @@ td, th {
 td:first-child,
 th:first-child {
     padding-left: 4px;
+}
+
+td p:first-child {
+    margin-top: 0;
 }
 
 /* Footnotes */
@@ -111,7 +118,7 @@ table.footnote td {
     padding-top: 1em;
     padding-left: 0px;
 }
-table.footnote td.label {
+table.footnote tr:first-child > td.label {
     border-top: 1px solid #eee;
     padding-left: 20px;
     padding-right: 20px;
