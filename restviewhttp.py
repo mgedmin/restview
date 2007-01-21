@@ -230,12 +230,9 @@ def main():
                       help='open a web browser [default: only if -l'
                            ' was not specified]',
                       action='store_true', default=None)
-    try:
-        opts, args = parser.parse_args(sys.argv[1:])
-        if len(args) != 1:
-            parser.error("exactly one argument expected")
-    except optparse.OptParseError, e:
-        sys.exit(str(e))
+    opts, args = parser.parse_args(sys.argv[1:])
+    if len(args) != 1:
+        parser.error("exactly one argument expected")
     if opts.browser is None:
         opts.browser = opts.listen is None
     server = RestViewer(args[0])
