@@ -3,21 +3,25 @@
 HTTP-based ReStructuredText viewer.
 
 Usage:
-    restviewhttp filename.rst
+    restviewhttp [options] filename.rst
 or
-    restviewhttp directory
+    restviewhttp [options] directory
+or
+    restviewhttp --help
 
 Needs docutils and a web browser.
 """
 
 import os
 import sys
+import socket
+import optparse
 import webbrowser
 import BaseHTTPServer
 import docutils.core
 import docutils.writers.html4css1
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -169,14 +173,83 @@ class RestViewer(object):
         return writer.output
 
 
+def parse_address(addr):
+    """Parse a socket address.
+
+        >>> parse_address('1234')
+        ('localhost', 1234)
+
+        >>> parse_address('example.com:1234')
+        ('example.com', 1234)
+
+        >>> parse_address('*:1234')
+        ('', 1234)
+
+        >>> try: parse_address('notanumber')
+        ... except ValueError, e: print e
+        Invalid address: notanumber
+
+        >>> try: parse_address('la:la:la')
+        ... except ValueError, e: print e
+        Invalid address: la:la:la
+
+    """
+    if ':' in addr:
+        try:
+            host, port = addr.split(':')
+        except ValueError:
+            raise ValueError('Invalid address: %s' % addr)
+    else:
+        host, port = 'localhost', addr
+    if host == '*':
+        host = '' # any
+    try:
+        return (host, int(port))
+    except ValueError:
+        raise ValueError('Invalid address: %s' % addr)
+
+
+def get_host_name(listen_on):
+    """Convert a listening interface name to a host name."""
+    if listen_on == '':
+        return socket.gethostname()
+    else:
+        return socket.gethostbyaddr(listen_on)[0]
+
+
 def main():
-    if len(sys.argv) < 2:
-        print >> sys.stderr, "Usage: %s pathname" % sys.argv[0]
-    server = RestViewer(sys.argv[1])
+    progname = os.path.basename(sys.argv[0])
+    parser = optparse.OptionParser("%prog [options] filename-or-directory",
+                    description="Serve ReStructuredText files over HTTP.",
+                    prog=progname)
+    parser.add_option('-l', '--listen',
+                      help='listen on a given port (or interface:port,'
+                           ' e.g. *:8080) [default: random port on localhost]',
+                      default=None)
+    parser.add_option('-b', '--browser',
+                      help='open a web browser [default: only if -l'
+                           ' was not specified]',
+                      action='store_true', default=None)
+    try:
+        opts, args = parser.parse_args(sys.argv[1:])
+        if len(args) != 1:
+            parser.error("exactly one argument expected")
+    except optparse.OptParseError, e:
+        sys.exit(str(e))
+    if opts.browser is None:
+        opts.browser = opts.listen is None
+    server = RestViewer(args[0])
+    if opts.listen:
+        try:
+            server.local_address = parse_address(opts.listen)
+        except ValueError, e:
+            sys.exit(str(e))
+    host = get_host_name(server.local_address[0])
     port = server.listen()
-    url = 'http://localhost:%d/' % port
+    url = 'http://%s:%d/' % (host, port)
     print "Listening on %s" % url
-    webbrowser.open(url)
+    if opts.browser:
+        webbrowser.open(url)
     try:
         server.serve()
     except KeyboardInterrupt:
