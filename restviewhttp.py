@@ -9,7 +9,8 @@ or
 or
     restviewhttp --help
 
-Needs docutils and a web browser.
+Needs docutils and a web browser.  Will syntax highlight if you have pygments
+installed.
 """
 
 import os
