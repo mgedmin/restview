@@ -14,6 +14,7 @@ installed.
 """
 
 import os
+import re
 import sys
 import socket
 import optparse
@@ -214,6 +215,16 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
             if self.in_mailto and self.settings.cloak_email_addresses:
                 encoded = self.cloak_email(encoded)
             self.body.append(encoded)
+
+    def encode(self, text):
+        encoded = docutils.writers.html4css1.HTMLTranslator.encode(self, text)
+        encoded = self.link_local_files(encoded)
+        return encoded
+
+    def link_local_files(self, text):
+        """Replace filenames with hyperlinks."""
+        text = re.sub("([-_a-zA-Z0-9]+[.]txt)", r'<a href="\1">\1</a>', text)
+        return text
 
 
 def parse_address(addr):
