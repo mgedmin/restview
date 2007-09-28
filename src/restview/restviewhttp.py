@@ -76,7 +76,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_error(404, "File not found")
         else:
             self.send_response(200)
-            self.send_header("Content-type", ctype)
+            self.send_header("Content-Type", ctype)
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
             return data
@@ -91,7 +91,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             if isinstance(html, unicode):
                 html = html.encode('UTF-8')
             self.send_response(200)
-            self.send_header("Content-type", "text/html; charset=UTF-8")
+            self.send_header("Content-Type", "text/html; charset=UTF-8")
             self.send_header("Content-Length", str(len(html)))
             self.end_headers()
             return html
@@ -112,7 +112,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
-        self.send_header("Content-type", "text/html; charset=UTF-8")
+        self.send_header("Content-Type", "text/html; charset=UTF-8")
         self.send_header("Content-Length", str(len(html)))
         self.end_headers()
         return html
