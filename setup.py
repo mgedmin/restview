@@ -7,7 +7,7 @@ def read(filename):
 
 setup(
     name='restview',
-    version='0.0.3',
+    version='0.0.4',
     author='Marius Gedminas',
     author_email='marius@gedmin.as',
     url='http://mg.pov.lt/restview/',
@@ -30,12 +30,14 @@ setup(
         'Topic :: Text Processing :: Markup',
     ],
 
-    py_modules=['restviewhttp'],
+    packages=['restview'],
+    package_dir={'':'src'},
+    include_package_data=True,
     install_requires=['docutils'],
     extras_requires={'syntax': ['pygments']},
     zip_safe=False,
     entry_points="""
     [console_scripts]
-    restview = restviewhttp:main
+    restview = restview.restviewhttp:main
     """,
 )
