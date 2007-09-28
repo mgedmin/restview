@@ -7,7 +7,7 @@ def read(filename):
 
 setup(
     name='restview',
-    version='0.0.4',
+    version='0.0.5',
     author='Marius Gedminas',
     author_email='marius@gedmin.as',
     url='http://mg.pov.lt/restview/',
