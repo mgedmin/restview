@@ -21,7 +21,15 @@ import BaseHTTPServer
 import docutils.core
 import docutils.writers.html4css1
 
-__version__ = "0.0.2"
+try:
+    import pygments
+    import pygments.lexers
+    import pygments.formatters
+except ImportError:
+    pygments = None
+
+
+__version__ = "0.0.3"
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -165,12 +173,40 @@ class RestViewer(object):
     def rest_to_html(self, rest_input):
         """Render ReStructuredText."""
         writer = docutils.writers.html4css1.Writer()
+        if pygments is not None:
+            writer.translator_class = SyntaxHighlightingHTMLTranslator
         docutils.core.publish_string(rest_input, writer=writer,
                                      settings_overrides={
                                         'stylesheet': self.css_path,
                                         'stylesheet_path': None,
                                         'embed_stylesheet': True})
         return writer.output
+
+
+class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator):
+
+    in_doctest = False
+
+    def visit_doctest_block(self, node):
+        docutils.writers.html4css1.HTMLTranslator.visit_doctest_block(self, node)
+        self.in_doctest = True
+
+    def depart_doctest_block(self, node):
+        docutils.writers.html4css1.HTMLTranslator.depart_doctest_block(self, node)
+        self.in_doctest = False
+
+    def visit_Text(self, node):
+        if self.in_doctest:
+            text = node.astext()
+            lexer = pygments.lexers.PythonConsoleLexer()
+            # noclasses forces inline styles, which is suboptimal
+            # figure out a way to include formatter.get_style_defs() into
+            # our CSS
+            formatter = pygments.formatters.HtmlFormatter(nowrap=True,
+                                                          noclasses=True)
+            self.body.append(pygments.highlight(text, lexer, formatter))
+        else:
+            docutils.writers.html4css1.HTMLTranslator.visit_Text(self, node)
 
 
 def parse_address(addr):
