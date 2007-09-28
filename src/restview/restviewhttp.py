@@ -209,7 +209,11 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
                                                           noclasses=True)
             self.body.append(pygments.highlight(text, lexer, formatter))
         else:
-            docutils.writers.html4css1.HTMLTranslator.visit_Text(self, node)
+            text = node.astext()
+            encoded = self.encode(text)
+            if self.in_mailto and self.settings.cloak_email_addresses:
+                encoded = self.cloak_email(encoded)
+            self.body.append(encoded)
 
 
 def parse_address(addr):
