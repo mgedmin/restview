@@ -3,7 +3,7 @@
 Gtk+ ReStructuredText viewer.
 
 Usage:
-    restview  filename.rst
+    restviewgtk  filename.rst
 
 Needs PyGtk, gnome-python-extras and docutils.
 """
