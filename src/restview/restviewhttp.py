@@ -30,6 +30,9 @@ except ImportError:
     pygments = None
 
 
+__version__ = "0.0.5a"
+
+
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """HTTP request handler that renders ReStructuredText on the fly."""
 
