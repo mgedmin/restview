@@ -7,7 +7,7 @@ def read(filename):
 
 setup(
     name='restview',
-    version='0.0.5',
+    version='1.0.0',
     author='Marius Gedminas',
     author_email='marius@gedmin.as',
     url='http://mg.pov.lt/restview/',
@@ -16,7 +16,7 @@ setup(
     long_description=read('README.txt'),
     license='GPL',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
