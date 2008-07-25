@@ -91,6 +91,18 @@ td p:first-child {
     margin-top: 0;
 }
 
+/* Table of Contents */
+
+p.topic-title {
+    font-weight: bold;
+    font-size: 120%;
+}
+
+a.toc-backref {
+    color: inherit;
+    text-decoration: none;
+}
+
 /* Footnotes */
 
 a.footnote-reference,
