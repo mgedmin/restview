@@ -148,6 +148,8 @@ class RestViewer(object):
 
     local_address = ('localhost', 0)
 
+    # only set one of those
+    css_url = None
     css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             'default.css')
 
@@ -179,11 +181,16 @@ class RestViewer(object):
         writer = docutils.writers.html4css1.Writer()
         if pygments is not None:
             writer.translator_class = SyntaxHighlightingHTMLTranslator
+        if self.css_url:
+            settings_overrides={'stylesheet': self.css_url,
+                                'stylesheet_path': None,
+                                'embed_stylesheet': False}
+        elif self.css_path:
+            settings_overrides={'stylesheet': self.css_path,
+                                'stylesheet_path': None,
+                                'embed_stylesheet': True}
         docutils.core.publish_string(rest_input, writer=writer,
-                                     settings_overrides={
-                                        'stylesheet': self.css_path,
-                                        'stylesheet_path': None,
-                                        'embed_stylesheet': True})
+                                     settings_overrides=settings_overrides)
         return writer.output
 
 
@@ -284,12 +291,23 @@ def main():
                       help='open a web browser [default: only if -l'
                            ' was not specified]',
                       action='store_true', default=None)
+    parser.add_option('--css',
+                      help='use the specified stylesheet',
+                      action='store', dest='css_path', default=None)
     opts, args = parser.parse_args(sys.argv[1:])
     if len(args) != 1:
         parser.error("exactly one argument expected")
     if opts.browser is None:
         opts.browser = opts.listen is None
     server = RestViewer(args[0])
+    if opts.css_path:
+        if (opts.css_path.startswith('http://') or
+            opts.css_path.startswith('https://')):
+            server.css_url = opts.css_path
+            server.css_path = None
+        else:
+            server.css_path = opts.css_path
+            server.css_url = None
     if opts.listen:
         try:
             server.local_address = parse_address(opts.listen)
