@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
 def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
