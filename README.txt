@@ -17,6 +17,11 @@ look for files that end in .txt or .rst and present you with a list.
 Changelog
 =========
 
+1.1.1 (unreleased)
+------------------
+
+...
+
 1.1.0 (2008-08-26)
 ------------------
 
