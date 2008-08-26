@@ -17,7 +17,7 @@ look for files that end in .txt or .rst and present you with a list.
 Changelog
 =========
 
-1.1.0 (unreleased)
+1.1.0 (2008-08-26)
 ------------------
 
 - Accepts any number of files and directories on the command line.
