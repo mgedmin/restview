@@ -31,7 +31,7 @@ except ImportError:
     pygments = None
 
 
-__version__ = "0.0.5a"
+__version__ = "1.1.0"
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -48,11 +48,15 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         content = self.do_GET_or_HEAD()
 
     def do_GET_or_HEAD(self):
+        root = self.server.renderer.root
         if self.path == '/':
-            if os.path.isdir(self.server.renderer.filename):
-                return self.handle_dir(self.server.renderer.filename)
+            if isinstance(root, str):
+                if os.path.isdir(root):
+                    return self.handle_dir(root)
+                else:
+                    return self.handle_rest_file(root)
             else:
-                return self.handle_rest_file(self.server.renderer.filename)
+                return self.handle_list(root)
         elif '..' in self.path:
             self.send_error(404, "File not found") # no hacking!
         elif self.path.endswith('.png'):
@@ -62,13 +66,17 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         elif self.path.endswith('.txt') or self.path.endswith('.rst'):
             return self.handle_rest_file(self.translate_path())
         else:
-            self.send_error(404, "File not found")
+            self.send_error(404, "File not found: %s" % self.path)
 
     def translate_path(self):
-        basedir = self.server.renderer.filename
-        if not os.path.isdir(basedir):
-            basedir = os.path.dirname(basedir)
-        return os.path.join(basedir, self.path.lstrip('/'))
+        root = self.server.renderer.root
+        path = self.path.lstrip('/')
+        if not isinstance(root, str):
+            idx, path = path.split('/', 1)
+            root = root[int(idx)]
+        if not os.path.isdir(root):
+            root = os.path.dirname(root)
+        return os.path.join(root, path)
 
     def handle_image(self, filename, ctype):
         try:
@@ -97,18 +105,22 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.end_headers()
             return html
 
-    def handle_dir(self, dirname):
+    def collect_files(self, dirname):
         if not dirname.endswith('/'):
             dirname += '/'
         files = []
         for dirpath, dirnames, filenames in os.walk(dirname):
-            if '.svn' in dirnames:
-                dirnames.remove('.svn')
+            dirnames[:] = [dn for dn in dirnames
+                           if dn != '.svn' and not dn.endswith('.egg-info')]
             for fn in filenames:
                 if fn.endswith('.txt') or fn.endswith('.rst'):
                     prefix = dirpath[len(dirname):]
                     files.append(os.path.join(prefix, fn))
         files.sort()
+        return files
+
+    def handle_dir(self, dirname):
+        files = [(fn, fn) for fn in self.collect_files(dirname)]
         html = self.render_dir_listing('RST files in %s' % dirname, files)
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
@@ -118,8 +130,29 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.end_headers()
         return html
 
+    def handle_list(self, list_of_files_or_dirs):
+        files = []
+        for idx, fn in enumerate(list_of_files_or_dirs):
+            if os.path.isdir(fn):
+                files.extend([(os.path.join(str(idx), f),
+                               os.path.join(fn, f))
+                               for f in self.collect_files(fn)])
+            else:
+                files.append((os.path.join(str(idx), os.path.basename(fn)),
+                              fn))
+        html = self.render_dir_listing('RST files', files)
+        if isinstance(html, unicode):
+            html = html.encode('UTF-8')
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=UTF-8")
+        self.send_header("Content-Length", str(len(html)))
+        self.end_headers()
+        return html
+
     def render_dir_listing(self, title, files):
-        files = ''.join([FILE_TEMPLATE.replace('$file', fn) for fn in files])
+        files = ''.join([FILE_TEMPLATE.replace('$href', href)
+                                      .replace('$file', fn)
+                         for href, fn in files])
         return DIR_TEMPLATE.replace('$title', title).replace('$files', files)
 
 
@@ -136,7 +169,7 @@ DIR_TEMPLATE = """\
 """
 
 FILE_TEMPLATE = """\
-  <li><a href="$file">$file</a></li>\
+  <li><a href="$href">$file</a></li>\
 """
 
 
@@ -153,8 +186,8 @@ class RestViewer(object):
     css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             'default.css')
 
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, root):
+        self.root = root
 
     def listen(self):
         """Start listening on a TCP port.
@@ -280,7 +313,7 @@ def get_host_name(listen_on):
 
 def main():
     progname = os.path.basename(sys.argv[0])
-    parser = optparse.OptionParser("%prog [options] filename-or-directory",
+    parser = optparse.OptionParser("%prog [options] filename-or-directory [...]",
                     description="Serve ReStructuredText files over HTTP.",
                     prog=progname)
     parser.add_option('-l', '--listen',
@@ -295,11 +328,14 @@ def main():
                       help='use the specified stylesheet',
                       action='store', dest='css_path', default=None)
     opts, args = parser.parse_args(sys.argv[1:])
-    if len(args) != 1:
-        parser.error("exactly one argument expected")
+    if not args:
+        parser.error("at least one argument expected")
     if opts.browser is None:
         opts.browser = opts.listen is None
-    server = RestViewer(args[0])
+    if len(args) == 1:
+        server = RestViewer(args[0])
+    else:
+        server = RestViewer(args)
     if opts.css_path:
         if (opts.css_path.startswith('http://') or
             opts.css_path.startswith('https://')):
