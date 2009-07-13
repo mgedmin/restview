@@ -20,7 +20,7 @@ Changelog
 1.1.1 (unreleased)
 ------------------
 
-...
+- Launches the web server in the background.
 
 1.1.0 (2008-08-26)
 ------------------

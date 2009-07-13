@@ -18,6 +18,7 @@ import re
 import sys
 import socket
 import optparse
+import threading
 import webbrowser
 import BaseHTTPServer
 import docutils.core
@@ -354,7 +355,10 @@ def main():
     url = 'http://%s:%d/' % (host, port)
     print "Listening on %s" % url
     if opts.browser:
-        webbrowser.open(url)
+        # launch the web browser in the background as it may block
+        t = threading.Thread(target=webbrowser.open, args=(url,))
+        t.setDaemon(True)
+        t.start()
     try:
         server.serve()
     except KeyboardInterrupt:
