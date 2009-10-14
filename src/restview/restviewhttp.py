@@ -305,11 +305,19 @@ def parse_address(addr):
 
 
 def get_host_name(listen_on):
-    """Convert a listening interface name to a host name."""
-    if listen_on == '':
+    """Convert a listening interface name to a host name.
+
+    The important part is to convert 0.0.0.0 to the system hostname, everything
+    else can be left as is.
+    """
+    try:
+        ip_addr = socket.inet_aton(listen_on)
+    except socket.error: # probably a hostname or ''
+        ip_addr = None
+    if listen_on == '' or ip_addr == '\0\0\0\0':
         return socket.gethostname()
     else:
-        return socket.gethostbyaddr(listen_on)[0]
+        return listen_on
 
 
 def main():
