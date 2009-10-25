@@ -7,7 +7,7 @@ def read(filename):
 
 setup(
     name='restview',
-    version='1.1.2',
+    version='1.1.3dev'
     author='Marius Gedminas',
     author_email='marius@gedmin.as',
     url='http://mg.pov.lt/restview/',
@@ -34,7 +34,7 @@ setup(
     package_dir={'':'src'},
     include_package_data=True,
     install_requires=['docutils'],
-    extras_requires={'syntax': ['pygments']},
+    extras_require={'syntax': ['pygments']},
     zip_safe=False,
     entry_points="""
     [console_scripts]
