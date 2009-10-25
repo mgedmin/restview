@@ -17,7 +17,7 @@ look for files that end in .txt or .rst and present you with a list.
 Changelog
 =========
 
-1.1.3 (unreleased)
+1.1.3 (2009-10-25)
 ------------------
 
 - Spell 'extras_require' correctly in setup.py (LP#459840).
