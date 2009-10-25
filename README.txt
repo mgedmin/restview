@@ -21,6 +21,7 @@ Changelog
 ------------------
 
 - Spell 'extras_require' correctly in setup.py (LP#459840).
+- Add a MANIFEST.in for complete source distributions (LP#459845).
 
 1.1.2 (2009-10-14)
 ------------------
