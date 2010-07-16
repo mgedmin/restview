@@ -17,6 +17,12 @@ look for files that end in .txt or .rst and present you with a list.
 Changelog
 =========
 
+1.1.4 (unreleased)
+------------------
+
+- "SEVERE" docutils errors now display a message and unformatted file in
+  the browser, instead of a traceback on the console.
+
 1.1.3 (2009-10-25)
 ------------------
 

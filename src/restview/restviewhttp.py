@@ -23,6 +23,7 @@ import webbrowser
 import BaseHTTPServer
 import docutils.core
 import docutils.writers.html4css1
+import cgi
 
 try:
     import pygments
@@ -151,10 +152,11 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return html
 
     def render_dir_listing(self, title, files):
-        files = ''.join([FILE_TEMPLATE.replace('$href', href)
-                                      .replace('$file', fn)
+        files = ''.join([FILE_TEMPLATE.replace('$href', cgi.escape(href))
+                                      .replace('$file', cgi.escape(fn))
                          for href, fn in files])
-        return DIR_TEMPLATE.replace('$title', title).replace('$files', files)
+        return (DIR_TEMPLATE.replace('$title', cgi.escape(title))
+                            .replace('$files', files))
 
 
 DIR_TEMPLATE = """\
@@ -171,6 +173,31 @@ DIR_TEMPLATE = """\
 
 FILE_TEMPLATE = """\
   <li><a href="$href">$file</a></li>\
+"""
+
+ERROR_TEMPLATE = """\
+<html>
+<head><title>$title</title></head>
+<style type="text/css">
+pre.error {
+    border-left: 3px double red;
+    margin-left: 19px;
+    padding-left: 19px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: red;
+}
+</style>
+<body>
+<h1>$title</h1>
+<pre class="error">
+$error
+</pre>
+<pre>
+$source
+</pre>
+</body>
+</html>
 """
 
 
@@ -223,9 +250,21 @@ class RestViewer(object):
             settings_overrides={'stylesheet': self.css_path,
                                 'stylesheet_path': None,
                                 'embed_stylesheet': True}
-        docutils.core.publish_string(rest_input, writer=writer,
-                                     settings_overrides=settings_overrides)
+        else:
+            settings_overrides = {}
+        try:
+            docutils.core.publish_string(rest_input, writer=writer,
+                                         settings_overrides=settings_overrides)
+        except Exception, e:
+            return self.render_exception(e.__class__.__name__, str(e),
+                                         rest_input)
         return writer.output
+
+    def render_exception(self, title, error, source):
+        html = (ERROR_TEMPLATE.replace('$title', cgi.escape(title))
+                              .replace('$error', cgi.escape(error))
+                              .replace('$source', cgi.escape(source)))
+        return html
 
 
 class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator):
