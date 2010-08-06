@@ -2,3 +2,5 @@ tags
 dist
 tmp
 src/restview.egg-info
+build
+temp
