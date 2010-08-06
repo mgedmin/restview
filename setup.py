@@ -5,9 +5,16 @@ from setuptools import setup
 def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
 
+def get_version(filename='src/restview/restviewhttp.py'):
+    d = dict(__file__=filename)
+    exec read(filename) in d
+    return d['__version__']
+
+version = get_version()
+
 setup(
     name='restview',
-    version='1.1.3',
+    version=version,
     author='Marius Gedminas',
     author_email='marius@gedmin.as',
     url='http://mg.pov.lt/restview/',
