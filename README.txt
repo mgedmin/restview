@@ -13,6 +13,11 @@ while you're editing it.
 You can also pass the name of a directory, and restview will recursively
 look for files that end in .txt or .rst and present you with a list.
 
+Finally, you can make sure your Python package has valid ReStructuredText
+in the long_description field by using ::
+
+  restview -e 'python setup.py --long-description'
+
 
 Changelog
 =========
