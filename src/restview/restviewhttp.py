@@ -7,6 +7,8 @@ Usage:
 or
     restviewhttp [options] directory
 or
+    restviewhttp [options] -e "command"
+or
     restviewhttp --help
 
 Needs docutils and a web browser.  Will syntax highlight if you have pygments
@@ -33,7 +35,7 @@ except ImportError:
     pygments = None
 
 
-__version__ = "1.1.3"
+__version__ = "1.2dev"
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -51,8 +53,11 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET_or_HEAD(self):
         root = self.server.renderer.root
+        command = self.server.renderer.command
         if self.path == '/':
-            if isinstance(root, str):
+            if command:
+                return self.handle_command(command)
+            elif isinstance(root, str):
                 if os.path.isdir(root):
                     return self.handle_dir(root)
                 else:
@@ -94,18 +99,35 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def handle_rest_file(self, filename):
         try:
-            html = self.server.renderer.render_rest_file(filename)
+            f = open(filename)
+            try:
+                return self.handle_rest_data(f.read())
+            finally:
+                f.close()
         except IOError, e:
             self.log_error("%s" % e)
             self.send_error(404, "File not found")
-        else:
-            if isinstance(html, unicode):
-                html = html.encode('UTF-8')
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=UTF-8")
-            self.send_header("Content-Length", str(len(html)))
-            self.end_headers()
-            return html
+
+    def handle_command(self, command):
+        try:
+            f = os.popen(command)
+            try:
+                return self.handle_rest_data(f.read())
+            finally:
+                f.close()
+        except OSError, e:
+            self.log_error("%s" % e)
+            self.send_error(404, "Command execution failed")
+
+    def handle_rest_data(self, data):
+        html = self.server.renderer.rest_to_html(data)
+        if isinstance(html, unicode):
+            html = html.encode('UTF-8')
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=UTF-8")
+        self.send_header("Content-Length", str(len(html)))
+        self.end_headers()
+        return html
 
     def collect_files(self, dirname):
         if not dirname.endswith('/'):
@@ -214,8 +236,9 @@ class RestViewer(object):
     css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             'default.css')
 
-    def __init__(self, root):
+    def __init__(self, root, command=None):
         self.root = root
+        self.command = command
 
     def listen(self):
         """Start listening on a TCP port.
@@ -232,10 +255,6 @@ class RestViewer(object):
         This function does not return.
         """
         self.server.serve_forever()
-
-    def render_rest_file(self, filename):
-        """Render ReStructuredText from a file."""
-        return self.rest_to_html(file(filename).read())
 
     def rest_to_html(self, rest_input):
         """Render ReStructuredText."""
@@ -372,15 +391,22 @@ def main():
                       help='open a web browser [default: only if -l'
                            ' was not specified]',
                       action='store_true', default=None)
+    parser.add_option('-e', '--execute',
+                      help='run a command to produce ReStructuredText',
+                      default=None)
     parser.add_option('--css',
                       help='use the specified stylesheet',
                       action='store', dest='css_path', default=None)
     opts, args = parser.parse_args(sys.argv[1:])
-    if not args:
+    if not args and not opts.execute:
         parser.error("at least one argument expected")
+    if args and opts.execute:
+        parser.error("specify a command (-e) or a file/directory, but not both")
     if opts.browser is None:
         opts.browser = opts.listen is None
-    if len(args) == 1:
+    if opts.execute:
+        server = RestViewer('.', command=opts.execute)
+    elif len(args) == 1:
         server = RestViewer(args[0])
     else:
         server = RestViewer(args)
