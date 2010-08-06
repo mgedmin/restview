@@ -1,5 +1,9 @@
-/* Stylesheet for ReStructuredText by Marius Gedminas.
+/*
+ * Stylesheet for ReStructuredText by Marius Gedminas.
  * (I didn't like the default one)
+ *
+ * XXX: I'm doing it incorrectly:
+ * http://docutils.sourceforge.net/docs/howto/html-stylesheets.html
  */
 
 body {
@@ -26,6 +30,28 @@ dt {
 }
 dd {
     margin-bottom: 1em;
+}
+
+/* Admonitions */
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+    font-weight: bold;
+}
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+    color: red;
+    font-weight: bold;
+}
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+    margin: 2em;
+    background: #fff7cc;
+    padding: 1em;
 }
 
 /* Doctest blocks */
@@ -159,3 +185,36 @@ div.system-message p.system-message-title {
     margin-top: 0;
     font-weight: bold;
 }
+
+/* Rules taken from the original */
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+/* ... many more are missing ... */
