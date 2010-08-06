@@ -35,7 +35,7 @@ except ImportError:
     pygments = None
 
 
-__version__ = "1.2dev"
+__version__ = "1.2"
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):

@@ -22,12 +22,13 @@ in the long_description field by using ::
 Changelog
 =========
 
-1.2 (unreleased)
+1.2 (2010-08-06)
 ----------------
 
 - "SEVERE" docutils errors now display a message and unformatted file in
   the browser, instead of a traceback on the console.
 - New command-line option, -e COMMAND.
+- Added styles for admonitions; many other important styles are still missing.
 
 1.1.3 (2009-10-25)
 ------------------
