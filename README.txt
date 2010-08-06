@@ -22,6 +22,10 @@ in the long_description field by using ::
 Changelog
 =========
 
+1.2.1 (unreleased)
+----------------
+
+
 1.2 (2010-08-06)
 ----------------
 
