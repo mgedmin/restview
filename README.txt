@@ -25,6 +25,7 @@ Changelog
 1.2.1 (unreleased)
 ----------------
 
+- Handle spaces and other special characters in URLs (LP#616335).
 
 1.2 (2010-08-06)
 ----------------
