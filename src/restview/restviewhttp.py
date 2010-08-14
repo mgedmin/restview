@@ -26,6 +26,7 @@ import BaseHTTPServer
 import docutils.core
 import docutils.writers.html4css1
 import cgi
+import urllib
 
 try:
     import pygments
@@ -52,6 +53,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         content = self.do_GET_or_HEAD()
 
     def do_GET_or_HEAD(self):
+        self.path = urllib.unquote(self.path)
         root = self.server.renderer.root
         command = self.server.renderer.command
         if self.path == '/':
