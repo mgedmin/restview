@@ -105,7 +105,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             finally:
                 f.close()
         except IOError, e:
-            self.log_error("%s" % e)
+            self.log_error("%s", e)
             self.send_error(404, "File not found")
 
     def handle_command(self, command):
