@@ -291,6 +291,7 @@ class RestViewer(object):
 class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator):
 
     in_doctest = False
+    in_text = False
 
     def visit_doctest_block(self, node):
         docutils.writers.html4css1.HTMLTranslator.visit_doctest_block(self, node)
@@ -312,18 +313,34 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
             self.body.append(pygments.highlight(text, lexer, formatter))
         else:
             text = node.astext()
+            self.in_text = True
             encoded = self.encode(text)
+            self.in_text = False
             if self.in_mailto and self.settings.cloak_email_addresses:
                 encoded = self.cloak_email(encoded)
             self.body.append(encoded)
 
+    def visit_literal(self, node):
+        self.in_text = True
+        docutils.writers.html4css1.HTMLTranslator.visit_literal(self, node)
+        self.in_text = False
+
     def encode(self, text):
         encoded = docutils.writers.html4css1.HTMLTranslator.encode(self, text)
-        encoded = self.link_local_files(encoded)
+        if self.in_text:
+            encoded = self.link_local_files(encoded)
         return encoded
 
-    def link_local_files(self, text):
-        """Replace filenames with hyperlinks."""
+    @staticmethod
+    def link_local_files(text):
+        """Replace filenames with hyperlinks.
+
+            >>> link_local_files = SyntaxHighlightingHTMLTranslator.link_local_files
+            >>> link_local_files('e.g. see README.txt for more info')
+            'e.g. see <a href="README.txt">README.txt</a> for more info'
+
+        """
+        # jwz was right...
         text = re.sub("([-_a-zA-Z0-9]+[.]txt)", r'<a href="\1">\1</a>', text)
         return text
 
