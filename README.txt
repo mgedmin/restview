@@ -22,8 +22,8 @@ in the long_description field by using ::
 Changelog
 =========
 
-1.2.1 (unreleased)
-----------------
+1.2.1 (2010-09-12)
+------------------
 
 - Handle spaces and other special characters in URLs (LP#616335).
 
