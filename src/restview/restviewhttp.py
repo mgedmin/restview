@@ -292,6 +292,7 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
 
     in_doctest = False
     in_text = False
+    in_reference = False
 
     def visit_doctest_block(self, node):
         docutils.writers.html4css1.HTMLTranslator.visit_doctest_block(self, node)
@@ -325,9 +326,17 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
         docutils.writers.html4css1.HTMLTranslator.visit_literal(self, node)
         self.in_text = False
 
+    def visit_reference(self, node):
+        self.in_reference = True
+        docutils.writers.html4css1.HTMLTranslator.visit_reference(self, node)
+
+    def depart_reference(self, node):
+        docutils.writers.html4css1.HTMLTranslator.depart_reference(self, node)
+        self.in_reference = False
+
     def encode(self, text):
         encoded = docutils.writers.html4css1.HTMLTranslator.encode(self, text)
-        if self.in_text:
+        if self.in_text and not self.in_reference:
             encoded = self.link_local_files(encoded)
         return encoded
 
