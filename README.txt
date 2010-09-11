@@ -27,6 +27,8 @@ Changelog
 
 - Handle spaces and other special characters in URLs (LP#616335).
 
+- Don't linkify filenames inside external references (LP#634827).
+
 1.2 (2010-08-06)
 ----------------
 
