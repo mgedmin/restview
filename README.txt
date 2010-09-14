@@ -22,7 +22,7 @@ in the long_description field by using ::
 Changelog
 =========
 
-1.2.2 (unreleased)
+1.2.2 (2010-09-14)
 ------------------
 
 - setup.py no longer requires docutils (LP#637423).
