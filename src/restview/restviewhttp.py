@@ -23,10 +23,11 @@ import optparse
 import threading
 import webbrowser
 import BaseHTTPServer
-import docutils.core
-import docutils.writers.html4css1
 import cgi
 import urllib
+
+import docutils.core
+import docutils.writers.html4css1
 
 try:
     import pygments
