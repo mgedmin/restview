@@ -25,6 +25,7 @@ Changelog
 1.2.2 (unreleased)
 ------------------
 
+- setup.py no longer requires docutils (LP#637423).
 
 1.2.1 (2010-09-12)
 ------------------

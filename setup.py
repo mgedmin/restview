@@ -6,9 +6,12 @@ def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
 
 def get_version(filename='src/restview/restviewhttp.py'):
-    d = dict(__file__=filename)
-    exec read(filename) in d
-    return d['__version__']
+    for line in read(filename).splitlines():
+        if line.startswith('__version__'):
+            d = {}
+            exec line in d
+            return d['__version__']
+    raise AssertionError("couldn't find __version__ in %s" % filename)
 
 version = get_version()
 
