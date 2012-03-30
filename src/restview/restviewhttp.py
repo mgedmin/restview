@@ -23,11 +23,13 @@ import optparse
 import threading
 import webbrowser
 import BaseHTTPServer
+import SocketServer
 import cgi
 import urllib
 
 import docutils.core
 import docutils.writers.html4css1
+import time
 
 try:
     import pygments
@@ -67,6 +69,14 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     return self.handle_rest_file(root)
             else:
                 return self.handle_list(root)
+        elif self.path == '/polling':
+            while True:
+                if os.stat(self.server.renderer.root).st_mtime != self.server.renderer.root_mtime:
+                    self.server.renderer.root_mtime = os.stat(self.server.renderer.root).st_mtime
+                    self.send_response(200)
+                    self.end_headers()
+                    return ""
+                time.sleep(0.1)
         elif '..' in self.path:
             self.send_error(404, "File not found") # no hacking!
         elif self.path.endswith('.png'):
@@ -124,6 +134,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def handle_rest_data(self, data):
         html = self.server.renderer.rest_to_html(data)
+        html += AJAX_STR
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
@@ -200,6 +211,36 @@ FILE_TEMPLATE = """\
   <li><a href="$href">$file</a></li>\
 """
 
+AJAX_STR = """
+<script>
+window.onload = function(){
+    function createXMLHttpRequest(){
+        if(window.ActiveXObject){
+            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        } else if(window.XMLHttpRequest){
+            xmlHttp = new XMLHttpRequest();
+        }
+    }
+
+    function handleStateChange(){
+        if(xmlHttp.readyState == 4){
+            window.location.reload();
+        }
+    }
+
+    function doHttpRequest(request,url){
+        createXMLHttpRequest();
+        xmlHttp.onreadystatechange= handleStateChange;
+        xmlHttp.open(request,url,true);
+        xmlHttp.send(null);
+    }
+
+    doHttpRequest('GET', '/polling');
+}
+
+</script>
+"""
+
 ERROR_TEMPLATE = """\
 <html>
 <head><title>$title</title></head>
@@ -225,11 +266,14 @@ $source
 </html>
 """
 
+class ThreadingHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+    daemon_threads = True
+    pass
 
 class RestViewer(object):
     """Web server that renders ReStructuredText on the fly."""
 
-    server_class = BaseHTTPServer.HTTPServer
+    server_class = ThreadingHTTPServer
     handler_class = MyRequestHandler
 
     local_address = ('localhost', 0)
@@ -241,6 +285,7 @@ class RestViewer(object):
 
     def __init__(self, root, command=None):
         self.root = root
+        self.root_mtime = os.stat(root).st_mtime
         self.command = command
 
     def listen(self):
