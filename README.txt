@@ -22,8 +22,11 @@ in the long_description field by using ::
 Changelog
 =========
 
-1.2.3 (unreleased)
+1.3.0 (unreleased)
 ------------------
+
+- Automatically reload the web page when the source file changes (LP#965746).
+  Patch by speq (sp@bsdx.org).
 
 1.2.2 (2010-09-14)
 ------------------

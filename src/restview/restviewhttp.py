@@ -39,7 +39,7 @@ except ImportError:
     pygments = None
 
 
-__version__ = "1.2.3dev"
+__version__ = "1.3.0dev"
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -228,10 +228,10 @@ window.onload = function(){
         }
     }
 
-    function doHttpRequest(request,url){
+    function doHttpRequest(request, url){
         createXMLHttpRequest();
-        xmlHttp.onreadystatechange= handleStateChange;
-        xmlHttp.open(request,url,true);
+        xmlHttp.onreadystatechange = handleStateChange;
+        xmlHttp.open(request, url, true);
         xmlHttp.send(null);
     }
 
@@ -268,7 +268,7 @@ $source
 
 class ThreadingHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     daemon_threads = True
-    pass
+
 
 class RestViewer(object):
     """Web server that renders ReStructuredText on the fly."""
