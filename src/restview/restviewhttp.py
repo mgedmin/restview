@@ -9,6 +9,8 @@ or
 or
     restviewhttp [options] -e "command"
 or
+    restviewhttp [options] --long-description
+or
     restviewhttp --help
 
 Needs docutils and a web browser.  Will syntax highlight if you have pygments
@@ -468,6 +470,10 @@ def main():
     parser.add_option('-e', '--execute',
                       help='run a command to produce ReStructuredText',
                       default=None)
+    parser.add_option('--long-description',
+                      help='run "python setup.py --long-description" to produce ReStructuredText',
+                      action='store_const', dest='execute',
+                      const='python setup.py --long-description')
     parser.add_option('--css',
                       help='use the specified stylesheet',
                       action='store', dest='css_path', default=None)

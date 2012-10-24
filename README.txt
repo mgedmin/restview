@@ -18,6 +18,10 @@ in the long_description field by using ::
 
   restview -e 'python setup.py --long-description'
 
+This is so useful restview has a shortcut for it ::
+
+  restview --long-description
+
 
 Changelog
 =========
@@ -27,6 +31,8 @@ Changelog
 
 - Automatically reload the web page when the source file changes (LP#965746).
   Patch by speq (sp@bsdx.org).
+
+- New option: restview --long-description.
 
 1.2.2 (2010-09-14)
 ------------------
