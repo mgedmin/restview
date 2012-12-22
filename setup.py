@@ -9,7 +9,7 @@ def get_version(filename='src/restview/restviewhttp.py'):
     for line in read(filename).splitlines():
         if line.startswith('__version__'):
             d = {}
-            exec line in d
+            exec(line, d)
             return d['__version__']
     raise AssertionError("couldn't find __version__ in %s" % filename)
 
