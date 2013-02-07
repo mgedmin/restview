@@ -9,7 +9,7 @@ def get_version(filename='src/restview/restviewhttp.py'):
     for line in read(filename).splitlines():
         if line.startswith('__version__'):
             d = {}
-            exec line in d
+            exec(line, d)
             return d['__version__']
     raise AssertionError("couldn't find __version__ in %s" % filename)
 
@@ -32,6 +32,8 @@ setup(
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'Operating System :: OS Independent',
         'Topic :: Documentation',
         'Topic :: Internet :: WWW/HTTP :: HTTP Servers',
