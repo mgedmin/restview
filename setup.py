@@ -2,6 +2,10 @@
 import os
 from setuptools import setup
 
+def test_suite():
+    import doctest
+    return doctest.DocTestSuite('restview.restviewhttp')
+
 def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
 
@@ -47,6 +51,7 @@ setup(
     include_package_data=True,
     install_requires=['docutils'],
     extras_require={'syntax': ['pygments']},
+    test_suite='__main__.test_suite',
     zip_safe=False,
     entry_points="""
     [console_scripts]

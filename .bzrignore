@@ -5,3 +5,4 @@ src/restview.egg-info
 build
 temp
 distribute-0.6.10.tar.gz
+.tox
