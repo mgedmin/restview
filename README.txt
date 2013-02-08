@@ -34,6 +34,8 @@ Changelog
 
 - New option: restview --long-description.
 
+- Add Python 3 support: Launchpad merge request by 'myint'.
+
 1.2.2 (2010-09-14)
 ------------------
 
