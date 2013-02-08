@@ -21,6 +21,10 @@ all:
 check test:
 	$(PYTHON) test.py
 
+.PHONY: coverage
+coverage:
+	tox -e coverage
+
 .PHONY: dist
 dist:
 	$(PYTHON) setup.py sdist
