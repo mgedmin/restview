@@ -4,6 +4,11 @@ Changelog
 1.3.0 (unreleased)
 ------------------
 
+- Improve auto-linkification of local file names:
+
+  * allow subdirectories
+  * recognize .rst extensions
+
 - Automatically reload the web page when the source file changes (LP#965746).
   Patch by speq (sp@bsdx.org).
 

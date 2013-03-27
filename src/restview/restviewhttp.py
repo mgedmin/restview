@@ -422,11 +422,15 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
             >>> link_local_files = SyntaxHighlightingHTMLTranslator.link_local_files
             >>> link_local_files('e.g. see README.txt for more info')
             'e.g. see <a href="README.txt">README.txt</a> for more info'
+            >>> link_local_files('e.g. see docs/HACKING.rst for more info')
+            'e.g. see <a href="docs/HACKING.rst">docs/HACKING.rst</a> for more info'
+            >>> link_local_files('what about http://example.com/README.txt ?')
+            'what about http://example.com/README.txt ?'
 
         """
         # jwz was right...
-        text = re.sub("([-_a-zA-Z0-9]+[.]txt)", r'<a href="\1">\1</a>', text)
-        return text
+        return re.sub(r"(^|\s)([-_a-zA-Z0-9/]+[.](txt|rst))",
+                      r'\1<a href="\2">\2</a>', text)
 
 
 def parse_address(addr):
