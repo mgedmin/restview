@@ -7,7 +7,8 @@ def test_suite():
     return doctest.DocTestSuite('restview.restviewhttp')
 
 def read(filename):
-    return open(os.path.join(os.path.dirname(__file__), filename)).read()
+    with open(os.path.join(os.path.dirname(__file__), filename)) as f:
+        return f.read()
 
 def get_version(filename='src/restview/restviewhttp.py'):
     for line in read(filename).splitlines():
@@ -27,7 +28,7 @@ setup(
     url='http://mg.pov.lt/restview/',
     download_url='http://cheeseshop.python.org/pypi/restview',
     description='ReStructuredText viewer',
-    long_description=read('README.txt'),
+    long_description=read('README.rst') + '\n\n' + read('CHANGES.rst'),
     license='GPL',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -36,8 +37,12 @@ setup(
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
         'Operating System :: OS Independent',
         'Topic :: Documentation',
         'Topic :: Internet :: WWW/HTTP :: HTTP Servers',
@@ -47,7 +52,7 @@ setup(
     ],
 
     packages=['restview'],
-    package_dir={'':'src'},
+    package_dir={'': 'src'},
     include_package_data=True,
     install_requires=['docutils'],
     extras_require={'syntax': ['pygments']},

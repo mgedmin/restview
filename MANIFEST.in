@@ -3,3 +3,5 @@ include sample.rst
 include test.py
 include src/restview/default.css
 include Makefile
+include *.rst
+include tox.ini
