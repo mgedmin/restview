@@ -7,7 +7,7 @@ try:
 except ImportError:
     from io import StringIO
 
-from mock import patch
+from mock import Mock, patch
 
 from restview.restviewhttp import RestViewer, get_host_name, launch_browser, main
 
@@ -75,6 +75,89 @@ def doctest_RestViewer_rest_to_html():
         </html>
 
     """
+
+
+def doctest_RestViewer_rest_to_html_css_url():
+    """Test for RestViewer.rest_to_html
+
+        >>> viewer = RestViewer('.')
+        >>> viewer.css_url = 'http://example.com/my.css'
+        >>> print(viewer.rest_to_html('''
+        ... Some text
+        ... ''').strip())
+        <?xml version="1.0" encoding="utf-8" ?>
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        ...
+        <title></title>
+        <link rel="stylesheet" href="http://example.com/my.css" type="text/css" />
+        </head>
+        <body>
+        <div class="document">
+        <BLANKLINE>
+        <BLANKLINE>
+        <p>Some text</p>
+        </div>
+        </body>
+        </html>
+
+    """
+
+
+def doctest_RestViewer_rest_to_html_strict_and_error_handling():
+    """Test for RestViewer.rest_to_html
+
+        >>> stderr_patcher = patch('sys.stderr', StringIO())
+        >>> stderr = stderr_patcher.start()
+
+        >>> viewer = RestViewer('.')
+        >>> viewer.css_path = viewer.css_url = None
+        >>> viewer.strict = True
+        >>> print(viewer.rest_to_html('''
+        ... Some text with an `error
+        ... ''').strip())
+        <html>
+        <head>
+        <title>SystemMessage</title>
+        <style type="text/css">
+        pre.error {
+            border-left: 3px double red;
+            margin-left: 19px;
+            padding-left: 19px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            color: red;
+        }
+        </style>
+        </head>
+        <body>
+        <h1>SystemMessage</h1>
+        <pre class="error">
+        &lt;string&gt;:2: (WARNING/2) Inline interpreted text or phrase reference start-string without end-string.
+        </pre>
+        <pre>
+        <BLANKLINE>
+        Some text with an `error
+        <BLANKLINE>
+        </pre>
+        </body>
+        </html>
+
+        >>> stderr_patcher.stop()
+
+    """
+
+
+class TestRestViewer(unittest.TestCase):
+
+    def test_serve(self):
+        viewer = RestViewer('.')
+        viewer.server = Mock()
+        viewer.serve()
+        viewer.server.serve_forever.assert_called_once()
+
 
 class TestGlobals(unittest.TestCase):
 
@@ -173,6 +256,7 @@ class TestMain(unittest.TestCase):
 
 def test_suite():
     return unittest.TestSuite([
+        unittest.makeSuite(TestRestViewer),
         unittest.makeSuite(TestGlobals),
         unittest.makeSuite(TestMain),
         doctest.DocTestSuite(optionflags=doctest.ELLIPSIS|doctest.REPORT_NDIFF),

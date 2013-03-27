@@ -265,7 +265,8 @@ window.onload = function(){
 
 ERROR_TEMPLATE = """\
 <html>
-<head><title>$title</title></head>
+<head>
+<title>$title</title>
 <style type="text/css">
 pre.error {
     border-left: 3px double red;
@@ -276,6 +277,7 @@ pre.error {
     color: red;
 }
 </style>
+</head>
 <body>
 <h1>$title</h1>
 <pre class="error">
