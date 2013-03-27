@@ -9,7 +9,36 @@ except ImportError:
 
 from mock import Mock, patch
 
-from restview.restviewhttp import RestViewer, get_host_name, launch_browser, main
+from restview.restviewhttp import (MyRequestHandler, RestViewer,
+                                   get_host_name, launch_browser, main)
+
+
+class MyRequestHandlerForTests(MyRequestHandler):
+    def __init__(self):
+        pass
+
+
+def doctest_MyRequestHandler_render_dir_listing():
+    """Test for MyRequestHandler.render_dir_listing
+
+        >>> handler = MyRequestHandlerForTests()
+        >>> print(handler.render_dir_listing('Files in .', [
+        ...     ('1/README.rst', 'README.rst'),
+        ...     ('2/CHANGES.rst', 'CHANGES.rst'),
+        ... ]))
+        <html>
+        <head><title>Files in .</title></head>
+        <body>
+        <h1>Files in .</h1>
+        <ul>
+          <li><a href="1/README.rst">README.rst</a></li>
+          <li><a href="2/CHANGES.rst">CHANGES.rst</a></li>
+        </ul>
+        </body>
+        </html>
+        <BLANKLINE>
+
+    """
 
 
 def doctest_RestViewer_rest_to_html():

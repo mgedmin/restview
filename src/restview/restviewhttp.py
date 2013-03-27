@@ -223,14 +223,13 @@ DIR_TEMPLATE = """\
 <body>
 <h1>$title</h1>
 <ul>
-  $files
-</ul>
+$files</ul>
 </body>
 </html>
 """
 
 FILE_TEMPLATE = """\
-  <li><a href="$href">$file</a></li>\
+  <li><a href="$href">$file</a></li>
 """
 
 AJAX_STR = """
