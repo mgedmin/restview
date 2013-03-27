@@ -490,6 +490,17 @@ def get_host_name(listen_on):
         return listen_on
 
 
+def launch_browser(url):
+    """Launch the web browser for a given URL.
+
+    Does not block.
+    """
+    # Do it in the background as it may block
+    t = threading.Thread(target=webbrowser.open, args=(url,))
+    t.setDaemon(True)
+    t.start()
+
+
 def main():
     progname = os.path.basename(sys.argv[0])
     parser = optparse.OptionParser("%prog [options] filename-or-directory [...]",
@@ -544,16 +555,13 @@ def main():
         try:
             server.local_address = parse_address(opts.listen)
         except ValueError as e:
-            sys.exit(str(e))
+            parser.error(str(e))
     host = get_host_name(server.local_address[0])
     port = server.listen()
     url = 'http://%s:%d/' % (host, port)
     print("Listening on %s" % url)
     if opts.browser:
-        # launch the web browser in the background as it may block
-        t = threading.Thread(target=webbrowser.open, args=(url,))
-        t.setDaemon(True)
-        t.start()
+        launch_browser(url)
     try:
         server.serve()
     except KeyboardInterrupt:

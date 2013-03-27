@@ -1,9 +1,14 @@
 import doctest
 import unittest
 
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 from mock import patch
 
-from restview.restviewhttp import RestViewer, get_host_name
+from restview.restviewhttp import RestViewer, get_host_name, main
 
 
 def doctest_RestViewer_rest_to_html():
@@ -79,9 +84,88 @@ class TestGlobals(unittest.TestCase):
             self.assertEqual(get_host_name('localhost'), 'localhost')
 
 
+class TestMain(unittest.TestCase):
+
+    def _serve(self):
+        self._serve_called = True
+        raise KeyboardInterrupt()
+
+    def run_main(self, *args, **kw):
+        expected_exit_code = kw.pop('rc', 0)
+        serve_called = kw.pop('serve_called', False)
+        browser_launched = kw.pop('browser_launched', False)
+        if kw: # pragma: nocover
+            raise TypeError("unexpected keyword arguments: %s"
+                            % ", ".join(sorted(kw)))
+        self._serve_called = False
+        with patch('sys.argv', ['restview'] + list(args)):
+            with patch('sys.stdout', StringIO()) as stdout:
+                with patch('sys.stderr', StringIO()) as stderr:
+                    with patch('restview.restviewhttp.launch_browser') as launch_browser:
+                        with patch.object(RestViewer, 'serve', self._serve):
+                            try:
+                                main()
+                            except SystemExit as e:
+                                self.assertEqual(e.args[0], expected_exit_code)
+                            else:
+                                if not serve_called:
+                                    self.fail("main() did not raise SystemExit")
+                            if serve_called:
+                                self.assertTrue(self._serve_called)
+                            if browser_launched:
+                                launch_browser.assert_called_once()
+                            return stdout.getvalue(), stderr.getvalue()
+
+    def test_help(self):
+        stdout, stderr = self.run_main('--help')
+        self.assertTrue('restview [options] filename-or-directory' in stdout,
+                        stdout)
+
+    def test_error_when_no_arguments(self):
+        stdout, stderr = self.run_main(rc=2)
+        self.assertEqual(stderr.splitlines()[-1],
+             'restview: error: at least one argument expected')
+
+    def test_error_when_both_command_and_file_specified(self):
+        stdout, stderr = self.run_main('-e', 'cat README.rst', 'CHANGES.rst',
+                                       rc=2)
+        self.assertEqual(stderr.splitlines()[-1],
+             'restview: error: specify a command (-e) or a file/directory,'
+             ' but not both')
+
+    def test_all_is_well(self):
+        self.run_main('.', serve_called=True, browser_launched=True)
+
+##  def test_multiple_files(self): # XXX: broken at the moment!
+##      self.run_main('README.rst', 'CHANGES.rst', serve_called=True,
+##                    browser_launched=True)
+
+    def test_command(self):
+        self.run_main('--long-description',
+                      serve_called=True, browser_launched=True)
+
+    def test_specify_listen_address(self):
+        self.run_main('-l', '0.0.0.0:8080', '.',
+                      serve_called=True, browser_launched=True)
+
+    def test_specify_invalid_listen_address(self):
+        stdout, stderr = self.run_main('-l', 'nonsense', '.', rc=2)
+        self.assertEqual(stderr.splitlines()[-1],
+             'restview: error: Invalid address: nonsense')
+
+    def test_custom_css_url(self):
+        self.run_main('.', '--css', 'http://example.com/my.css',
+                      serve_called=True, browser_launched=True)
+
+    def test_custom_css_file(self):
+        self.run_main('.', '--css', 'my.css',
+                      serve_called=True, browser_launched=True)
+
+
 def test_suite():
     return unittest.TestSuite([
         unittest.makeSuite(TestGlobals),
+        unittest.makeSuite(TestMain),
         doctest.DocTestSuite(optionflags=doctest.ELLIPSIS|doctest.REPORT_NDIFF),
         doctest.DocTestSuite('restview.restviewhttp'),
     ])
