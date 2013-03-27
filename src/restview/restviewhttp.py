@@ -196,7 +196,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             if os.path.isdir(fn):
                 files.extend([(os.path.join(str(idx), f),
                                os.path.join(fn, f))
-                               for f in self.collect_files(fn)])
+                              for f in self.collect_files(fn)])
             else:
                 files.append((os.path.join(str(idx), os.path.basename(fn)),
                               fn))
@@ -288,6 +288,7 @@ $source
 </html>
 """
 
+
 class ThreadingHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     daemon_threads = True
 
@@ -334,13 +335,13 @@ class RestViewer(object):
         if pygments is not None:
             writer.translator_class = SyntaxHighlightingHTMLTranslator
         if self.css_url:
-            settings_overrides={'stylesheet': self.css_url,
-                                'stylesheet_path': None,
-                                'embed_stylesheet': False}
+            settings_overrides = {'stylesheet': self.css_url,
+                                  'stylesheet_path': None,
+                                  'embed_stylesheet': False}
         elif self.css_path:
-            settings_overrides={'stylesheet': self.css_path,
-                                'stylesheet_path': None,
-                                'embed_stylesheet': True}
+            settings_overrides = {'stylesheet': self.css_path,
+                                  'stylesheet_path': None,
+                                  'embed_stylesheet': True}
         else:
             settings_overrides = {}
 
