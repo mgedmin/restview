@@ -475,7 +475,7 @@ def get_host_name(listen_on):
         ip_addr = socket.inet_aton(listen_on)
     except socket.error: # probably a hostname or ''
         ip_addr = None
-    if listen_on == '' or ip_addr == '\0\0\0\0':
+    if listen_on == '' or ip_addr == b'\0\0\0\0':
         return socket.gethostname()
     else:
         return listen_on

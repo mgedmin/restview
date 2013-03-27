@@ -53,6 +53,7 @@ setup(
     install_requires=['docutils'],
     extras_require={'syntax': ['pygments']},
     test_suite='restview.tests.test_suite',
+    tests_require=['mock'],
     zip_safe=False,
     entry_points="""
     [console_scripts]

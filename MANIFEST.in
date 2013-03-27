@@ -5,3 +5,4 @@ include src/restview/default.css
 include Makefile
 include *.rst
 include tox.ini
+include .coveragerc
