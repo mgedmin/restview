@@ -329,7 +329,7 @@ class RestViewer(object):
         """
         self.server.serve_forever()
 
-    def rest_to_html(self, rest_input):
+    def rest_to_html(self, rest_input, settings=None):
         """Render ReStructuredText."""
         writer = docutils.writers.html4css1.Writer()
         if pygments is not None:
@@ -347,6 +347,9 @@ class RestViewer(object):
 
         if self.strict:
             settings_overrides['halt_level'] = 1
+
+        if settings:
+            settings_overrides.update(settings)
 
         try:
             docutils.core.publish_string(rest_input, writer=writer,
@@ -398,8 +401,10 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
 
     def visit_literal(self, node):
         self.in_text = True
-        docutils.writers.html4css1.HTMLTranslator.visit_literal(self, node)
-        self.in_text = False
+        try:
+            docutils.writers.html4css1.HTMLTranslator.visit_literal(self, node)
+        finally:
+            self.in_text = False
 
     def visit_reference(self, node):
         self.in_reference = True
