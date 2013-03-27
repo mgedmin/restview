@@ -1,5 +1,6 @@
 import doctest
 import unittest
+import webbrowser
 
 try:
     from cStringIO import StringIO
@@ -8,7 +9,7 @@ except ImportError:
 
 from mock import patch
 
-from restview.restviewhttp import RestViewer, get_host_name, main
+from restview.restviewhttp import RestViewer, get_host_name, launch_browser, main
 
 
 def doctest_RestViewer_rest_to_html():
@@ -82,6 +83,14 @@ class TestGlobals(unittest.TestCase):
             self.assertEqual(get_host_name(''), 'myhostname.local')
             self.assertEqual(get_host_name('0.0.0.0'), 'myhostname.local')
             self.assertEqual(get_host_name('localhost'), 'localhost')
+
+    def test_launch_browser(self):
+        with patch('threading.Thread') as Thread:
+            launch_browser('http://example.com')
+            Thread.assert_called_once_with(target=webbrowser.open,
+                                           args=('http://example.com',))
+            Thread.return_value.setDaemon.assert_called_once_with(True)
+            Thread.return_value.start.assert_called_once()
 
 
 class TestMain(unittest.TestCase):
