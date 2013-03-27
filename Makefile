@@ -17,9 +17,13 @@ all:
 	@echo "Nothing to do"
 
 
-.PHONY: check test
-check test:
-	$(PYTHON) test.py
+.PHONY: check
+test:
+	$(PYTHON) setup.py test
+
+.PHONY: check 
+check:
+	detox
 
 .PHONY: coverage
 coverage:
