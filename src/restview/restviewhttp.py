@@ -305,6 +305,8 @@ class RestViewer(object):
     css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             'default.css')
 
+    strict = None
+
     def __init__(self, root, command=None):
         self.root = root
         self.root_mtime = os.stat(root).st_mtime
@@ -341,6 +343,10 @@ class RestViewer(object):
                                 'embed_stylesheet': True}
         else:
             settings_overrides = {}
+
+        if self.strict:
+            settings_overrides['halt_level'] = 1
+
         try:
             docutils.core.publish_string(rest_input, writer=writer,
                                          settings_overrides=settings_overrides)
@@ -497,6 +503,9 @@ def main():
     parser.add_option('--css',
                       help='use the specified stylesheet',
                       action='store', dest='css_path', default=None)
+    parser.add_option('--strict',
+                      help='halt at the slightest problem',
+                      action='store_true', default=False)
     opts, args = parser.parse_args(sys.argv[1:])
     if not args and not opts.execute:
         parser.error("at least one argument expected")
@@ -518,6 +527,9 @@ def main():
         else:
             server.css_path = opts.css_path
             server.css_url = None
+
+    server.strict = opts.strict
+
     if opts.listen:
         try:
             server.local_address = parse_address(opts.listen)
