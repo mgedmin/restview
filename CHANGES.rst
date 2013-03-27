@@ -9,9 +9,9 @@ Changelog
 
 - New option: restview --long-description.
 
-- Add Python 3 support (LP#1093098).  Patch by Steven Myint (sm.stores@me.com).
+- Add Python 3 support (LP#1093098).  Patch by Steven Myint (git@stevenmyint.com).
 
-- New option: restview --strict. Patch by Steven Myint (sm.stores@me.com).
+- New option: restview --strict. Patch by Steven Myint (git@stevenmyint.com).
 
 - Moved to Github.
 
