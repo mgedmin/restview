@@ -13,8 +13,8 @@ or
 or
     restviewhttp --help
 
-Needs docutils and a web browser.  Will syntax highlight if you have pygments
-installed.
+Needs docutils and a web browser. Will syntax-highlight code or doctest blocks
+if you have pygments installed.
 """
 from __future__ import print_function
 
@@ -49,8 +49,7 @@ import time
 
 try:
     import pygments
-    import pygments.lexers
-    import pygments.formatters
+    from pygments import lexers, formatters
 except ImportError:
     pygments = None
 
@@ -372,6 +371,11 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
     in_doctest = False
     in_text = False
     in_reference = False
+    formatter_styles = formatters.HtmlFormatter(style='trac').get_style_defs('pre')
+
+    def __init__(self, document):
+        docutils.writers.html4css1.HTMLTranslator.__init__(self, document)
+        self.body_prefix[:0] = ['<style type="text/css">\n', self.formatter_styles, '\n</style>\n']
 
     def visit_doctest_block(self, node):
         docutils.writers.html4css1.HTMLTranslator.visit_doctest_block(self, node)
@@ -384,12 +388,8 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
     def visit_Text(self, node):
         if self.in_doctest:
             text = node.astext()
-            lexer = pygments.lexers.PythonConsoleLexer()
-            # noclasses forces inline styles, which is suboptimal
-            # figure out a way to include formatter.get_style_defs() into
-            # our CSS
-            formatter = pygments.formatters.HtmlFormatter(nowrap=True,
-                                                          noclasses=True)
+            lexer = lexers.PythonConsoleLexer()
+            formatter = formatters.HtmlFormatter(nowrap=True)
             self.body.append(pygments.highlight(text, lexer, formatter))
         else:
             text = node.astext()
