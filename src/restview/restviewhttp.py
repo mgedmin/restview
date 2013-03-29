@@ -100,9 +100,11 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 time.sleep(0.1)
         elif '..' in self.path:
             self.send_error(404, "File not found") # no hacking!
+        elif self.path.endswith('.gif'):
+            return self.handle_image(self.translate_path(), 'image/gif')
         elif self.path.endswith('.png'):
             return self.handle_image(self.translate_path(), 'image/png')
-        elif self.path.endswith('.jpg'):
+        elif self.path.endswith('.jpg') or self.path.endswith('.jpeg'):
             return self.handle_image(self.translate_path(), 'image/jpeg')
         elif self.path.endswith('.txt') or self.path.endswith('.rst'):
             return self.handle_rest_file(self.translate_path())
