@@ -98,8 +98,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     self.end_headers()
                     return ""
                 time.sleep(0.1)
-        elif '..' in self.path:
-            self.send_error(404, "File not found") # no hacking!
+        elif '/..' in self.path:
+            self.send_error(400, "Bad request") # no hacking!
         elif self.path.endswith('.gif'):
             return self.handle_image(self.translate_path(), 'image/gif')
         elif self.path.endswith('.png'):
@@ -109,7 +109,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         elif self.path.endswith('.txt') or self.path.endswith('.rst'):
             return self.handle_rest_file(self.translate_path())
         else:
-            self.send_error(404, "File not found: %s" % self.path)
+            self.send_error(501, "File type not supported: %s" % self.path)
 
     def translate_path(self):
         root = self.server.renderer.root
@@ -125,7 +125,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         try:
             data = file(filename, 'rb').read()
         except IOError:
-            self.send_error(404, "File not found")
+            self.send_error(404, "File not found: %s" % self.path)
         else:
             self.send_response(200)
             self.send_header("Content-Type", ctype)
@@ -142,7 +142,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 f.close()
         except IOError as e:
             self.log_error("%s", e)
-            self.send_error(404, "File not found")
+            self.send_error(404, "File not found: %s" % self.path)
 
     def handle_command(self, command):
         try:
@@ -153,7 +153,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 f.close()
         except OSError as e:
             self.log_error("%s" % e)
-            self.send_error(404, "Command execution failed")
+            self.send_error(500, "Command execution failed")
 
     def handle_rest_data(self, data):
         html = self.server.renderer.rest_to_html(data)
