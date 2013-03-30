@@ -157,12 +157,12 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def handle_rest_data(self, data):
         html = self.server.renderer.rest_to_html(data)
-        html += AJAX_STR
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=UTF-8")
         self.send_header("Content-Length", str(len(html)))
+        self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
         self.end_headers()
         return html
 
@@ -359,13 +359,20 @@ class RestViewer(object):
         except Exception as e:
             return self.render_exception(e.__class__.__name__, str(e),
                                          rest_input)
-        return writer.output
+        return self.get_markup(writer.output)
 
     def render_exception(self, title, error, source):
         html = (ERROR_TEMPLATE.replace('$title', cgi.escape(title))
                               .replace('$error', cgi.escape(error))
                               .replace('$source', cgi.escape(source)))
-        return html
+        return self.get_markup(html)
+
+    def get_markup(self, markup):
+        if self.command is None:
+            return markup.replace('</body>', AJAX_STR + '</body>')
+        else:
+            return markup.replace('</title>',
+                                  ' -e "' + cgi.escape(self.command) + '"</title>')
 
 
 class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator):
