@@ -109,7 +109,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
                         self.end_headers()
                         self.server.renderer.root_mtime = os.stat(self.translate_path()).st_mtime
-                    except Exception, e:
+                    except Exception as e:
                         self.log_error('%s (client closed "%s" before acknowledgement)', e, self.path)
                     finally:
                         return
@@ -117,7 +117,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             try:
                 self.send_response(204)
                 self.end_headers()
-            except Exception, e:
+            except Exception as e:
                 self.log_error('%s (client closed "%s" before cancellation)', e, self.path)
             finally:
                 return
