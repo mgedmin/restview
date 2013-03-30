@@ -72,7 +72,6 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """HTTP request handler that renders ReStructuredText on the fly."""
 
     server_version = "restviewhttp/" + __version__
-    last_atime = 0
 
     def do_GET(self):
         content = self.do_GET_or_HEAD()
