@@ -172,17 +172,18 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         files = []
         for dirpath, dirnames, filenames in os.walk(dirname):
             dirnames[:] = [dn for dn in dirnames
-                           if dn != '.svn' and not dn.endswith('.egg-info')]
+                           if not dn.startswith('.')
+                           and not dn.endswith('.egg-info')]
             for fn in filenames:
                 if fn.endswith('.txt') or fn.endswith('.rst'):
                     prefix = dirpath[len(dirname):]
                     files.append(os.path.join(prefix, fn))
-        files.sort()
+        files.sort(key=str.lower)
         return files
 
     def handle_dir(self, dirname):
         files = [(fn, fn) for fn in self.collect_files(dirname)]
-        html = self.render_dir_listing('RST files in %s' % dirname, files)
+        html = self.render_dir_listing("RST files in %s" % os.path.abspath(dirname), files)
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
@@ -201,7 +202,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 files.append((os.path.join(str(idx), os.path.basename(fn)),
                               fn))
-        html = self.render_dir_listing('RST files', files)
+        html = self.render_dir_listing("RST files", files)
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
@@ -219,8 +220,11 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
 DIR_TEMPLATE = """\
+<!DOCTYPE html>
 <html>
-<head><title>$title</title></head>
+<head>
+<title>$title</title>
+</head>
 <body>
 <h1>$title</h1>
 <ul>
@@ -264,6 +268,7 @@ window.onload = function(){
 """
 
 ERROR_TEMPLATE = """\
+<!DOCTYPE html>
 <html>
 <head>
 <title>$title</title>
