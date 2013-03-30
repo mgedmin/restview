@@ -43,6 +43,11 @@ try:
 except ImportError:
     from urllib.parse import unquote
 
+try:
+    from urlparse import parse_qs
+except ImportError:
+    from urllib.parse import parse_qs
+
 import docutils.core
 import docutils.writers.html4css1
 import time
@@ -67,6 +72,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """HTTP request handler that renders ReStructuredText on the fly."""
 
     server_version = "restviewhttp/" + __version__
+    last_atime = 0
 
     def do_GET(self):
         content = self.do_GET_or_HEAD()
@@ -90,14 +96,31 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     return self.handle_rest_file(root)
             else:
                 return self.handle_list(root)
-        elif self.path == '/polling':
-            while True:
-                if os.stat(self.server.renderer.root).st_mtime != self.server.renderer.root_mtime:
-                    self.server.renderer.root_mtime = os.stat(self.server.renderer.root).st_mtime
-                    self.send_response(200)
-                    self.end_headers()
-                    return ""
-                time.sleep(0.1)
+        elif self.path.startswith('/polling?'):
+            saved_atime = last_atime
+            self.path = parse_qs(self.path.split('?', 1)[-1])['pathname'][0]
+            if self.path == '/':
+                self.path = os.path.basename(root)
+            self.server.renderer.root_mtime = os.stat(self.translate_path()).st_mtime
+            while last_atime == saved_atime:
+                if os.stat(self.translate_path()).st_mtime != self.server.renderer.root_mtime:
+                    try:
+                        self.send_response(200)
+                        self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
+                        self.end_headers()
+                        self.server.renderer.root_mtime = os.stat(self.translate_path()).st_mtime
+                    except Exception, e:
+                        self.log_error('%s (client closed "%s" before acknowledgement)', e, self.path)
+                    finally:
+                        return
+                time.sleep(0.2)
+            try:
+                self.send_response(204)
+                self.end_headers()
+            except Exception, e:
+                self.log_error('%s (client closed "%s" before cancellation)', e, self.path)
+            finally:
+                return
         elif '/..' in self.path:
             self.send_error(400, "Bad request") # no hacking!
         elif self.path.endswith('.gif'):
@@ -136,6 +159,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def handle_rest_file(self, filename):
         try:
             f = open(filename)
+            global last_atime
+            last_atime = time.time()
             try:
                 return self.handle_rest_data(f.read())
             finally:
@@ -238,32 +263,27 @@ FILE_TEMPLATE = """\
 """
 
 AJAX_STR = """
-<script>
-window.onload = function(){
-    function createXMLHttpRequest(){
-        if(window.ActiveXObject){
-            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
-        } else if(window.XMLHttpRequest){
+<script type="text/javascript">
+var xmlHttp = null;
+window.onload = function () {
+    setTimeout(function () {
+        if (window.XMLHttpRequest) {
             xmlHttp = new XMLHttpRequest();
+        } else if (window.ActiveXObject) {
+            xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
         }
-    }
-
-    function handleStateChange(){
-        if(xmlHttp.readyState == 4){
-            window.location.reload();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == '200') {
+                window.location.reload(true);
+            }
         }
-    }
-
-    function doHttpRequest(request, url){
-        createXMLHttpRequest();
-        xmlHttp.onreadystatechange = handleStateChange;
-        xmlHttp.open(request, url, true);
+        xmlHttp.open('HEAD', '/polling?pathname=' + location.pathname, true);
         xmlHttp.send(null);
-    }
-
-    doHttpRequest('GET', '/polling');
+    }, 0);
 }
-
+window.onbeforeunload = function () {
+    xmlHttp.abort();
+}
 </script>
 """
 
@@ -317,7 +337,6 @@ class RestViewer(object):
 
     def __init__(self, root, command=None):
         self.root = root
-        self.root_mtime = os.stat(root).st_mtime
         self.command = command
 
     def listen(self):
