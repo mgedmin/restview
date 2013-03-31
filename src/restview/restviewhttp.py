@@ -369,7 +369,7 @@ class RestViewer(object):
                                   'embed_stylesheet': True}
         else:
             settings_overrides = {}
-
+        settings_overrides['syntax_highlight'] = 'short'
         if self.strict:
             settings_overrides['halt_level'] = 1
 
