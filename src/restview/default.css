@@ -15,6 +15,10 @@ body {
 p {
     text-align: justify;
 }
+p.rubric {
+    text-align: center;
+    font-weight: bold;
+}
 
 /* Monospace text */
 
@@ -81,6 +85,7 @@ table {
     border-left: none;
     border-right: none;
     border-collapse: collapse;
+    margin: 0.5em 0;
 }
 tr:first-child > th {
     border-top: none;
@@ -115,6 +120,10 @@ th:first-child {
 
 td p:first-child {
     margin-top: 0;
+}
+th.field-name, th.docinfo-name {
+  white-space: nowrap;
+  padding-left: 0;
 }
 
 /* Table of Contents */
@@ -172,6 +181,9 @@ table.footnote + table.footnote td {
 
 /* System messages (aka errors) */
 
+div.system-messages h1 {
+    color: red;
+}
 div.system-message {
     border-left: 3px double red;
     margin-left: 19px;
@@ -180,9 +192,26 @@ div.system-message {
     padding-bottom: 10px;
     color: red;
 }
-
 div.system-message p.system-message-title {
     margin-top: 0;
+    font-weight: bold;
+}
+
+/* Sidebars */
+
+div.sidebar {
+    margin: 2em;
+    background: #fff7cc;
+    padding: 1em;
+    width: 40%;
+    float: right;
+    clear: right;
+}
+p.sidebar-title {
+    font-weight: bold;
+    font-size: larger;
+}
+p.sidebar-subtitle {
     font-weight: bold;
 }
 
@@ -210,11 +239,49 @@ table.borderless td, table.borderless th {
 blockquote.epigraph {
   margin: 2em 5em ; }
 
+div.topic {
+  margin: 2em }
+
 div.abstract {
   margin: 2em 5em }
 
 div.abstract p.topic-title {
   font-weight: bold ;
   text-align: center }
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+span.option {
+  white-space: nowrap }
+
+span.problematic {
+  color: red }
+
+ul.auto-toc {
+  list-style-type: none }
 
 /* ... many more are missing ... */
