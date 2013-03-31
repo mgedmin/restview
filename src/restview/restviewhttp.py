@@ -66,6 +66,7 @@ except NameError:
 
 
 __version__ = "1.3.0dev"
+last_atime = 0
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -79,7 +80,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.wfile.write(content)
 
     def do_HEAD(self):
-        content = self.do_GET_or_HEAD()
+        self.do_GET_or_HEAD()
 
     def do_GET_or_HEAD(self):
         self.path = unquote(self.path)
@@ -403,7 +404,7 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
     in_doctest = False
     in_text = False
     in_reference = False
-    formatter_styles = formatters.HtmlFormatter(style='trac').get_style_defs('pre')
+    formatter_styles = formatters.HtmlFormatter(style='default').get_style_defs('pre')
 
     def __init__(self, document):
         docutils.writers.html4css1.HTMLTranslator.__init__(self, document)
