@@ -22,6 +22,17 @@ Changelog
 
 - Moved to Github.
 
+- Many improvements by Eric Knibbe:
+
+  * ``restview dirname`` now ignores hidden subdirectories.
+  * files in directory listings are sorted case-insensitively.
+  * allow serving gif and jpg images.
+  * CSS rules for rubric, sidebars, and many other things.
+  * Syntax highlighting for code blocks.
+  * improved HTTP error messages.
+  * HTTP headers to prevent browser caching of dynamic content.
+
+
 1.2.2 (2010-09-14)
 ------------------
 
