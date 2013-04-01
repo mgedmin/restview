@@ -21,6 +21,7 @@ from __future__ import print_function
 import os
 import re
 import sys
+import time
 import socket
 import optparse
 import threading
@@ -53,7 +54,6 @@ except ImportError:
 
 import docutils.core
 import docutils.writers.html4css1
-import time
 
 try:
     import pygments
@@ -69,7 +69,6 @@ except NameError:
 
 
 __version__ = "1.3.0dev"
-last_atime = 0
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -100,30 +99,14 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 return self.handle_list(root)
         elif self.path.startswith('/polling?'):
-            saved_atime = last_atime
-            self.path = parse_qs(self.path.split('?', 1)[-1])['pathname'][0]
-            if self.path == '/':
-                self.path = os.path.basename(root)
-            self.server.renderer.root_mtime = os.stat(self.translate_path()).st_mtime
-            while last_atime == saved_atime:
-                if os.stat(self.translate_path()).st_mtime != self.server.renderer.root_mtime:
-                    try:
-                        self.send_response(200)
-                        self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
-                        self.end_headers()
-                        self.server.renderer.root_mtime = os.stat(self.translate_path()).st_mtime
-                    except Exception as e:
-                        self.log_error('%s (client closed "%s" before acknowledgement)', e, self.path)
-                    finally:
-                        return
-                time.sleep(0.2)
-            try:
-                self.send_response(204)
-                self.end_headers()
-            except Exception as e:
-                self.log_error('%s (client closed "%s" before cancellation)', e, self.path)
-            finally:
-                return
+            query = parse_qs(self.path.partition('?')[-1])
+            pathname = query['pathname'][0]
+            if pathname == '/' and isinstance(root, str):
+                pathname = root
+            else:
+                pathname = self.translate_path(pathname)
+            old_mtime = int(query['mtime'][0])
+            return self.handle_polling(pathname, old_mtime)
         elif '..' in self.path:
             self.send_error(400, "Bad request") # no hacking!
         elif self.path.endswith('.gif'):
@@ -137,9 +120,29 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             self.send_error(501, "File type not supported: %s" % self.path)
 
-    def translate_path(self):
+    def handle_polling(self, path, old_mtime):
+        # TODO: use inotify if available
+        while True:
+            mtime = int(os.stat(path).st_mtime)
+            # we lose precision by using int(), but I'm nervous of
+            # round-tripping floating point numbers through HTML and
+            # comparing them for equality
+            if mtime != old_mtime:
+                try:
+                    self.send_response(200)
+                    self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
+                    self.end_headers()
+                except Exception as e:
+                    self.log_error('%s (client closed "%s" before acknowledgement)', e, self.path)
+                finally:
+                    return
+            time.sleep(0.2)
+
+    def translate_path(self, path=None):
         root = self.server.renderer.root
-        path = self.path.lstrip('/')
+        if path is None:
+            path = self.path
+        path = path.lstrip('/')
         if not isinstance(root, str):
             idx, path = path.split('/', 1)
             root = root[int(idx)]
@@ -162,10 +165,9 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def handle_rest_file(self, filename):
         try:
             f = open(filename)
-            global last_atime
-            last_atime = time.time()
             try:
-                return self.handle_rest_data(f.read())
+                mtime = os.fstat(f.fileno()).st_mtime
+                return self.handle_rest_data(f.read(), mtime=mtime)
             finally:
                 f.close()
         except IOError as e:
@@ -183,8 +185,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.log_error("%s" % e)
             self.send_error(500, "Command execution failed")
 
-    def handle_rest_data(self, data):
-        html = self.server.renderer.rest_to_html(data)
+    def handle_rest_data(self, data, mtime=None):
+        html = self.server.renderer.rest_to_html(data, mtime=mtime)
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
@@ -280,7 +282,7 @@ window.onload = function () {
                 window.location.reload(true);
             }
         }
-        xmlHttp.open('HEAD', '/polling?pathname=' + location.pathname, true);
+        xmlHttp.open('HEAD', '/polling?pathname=' + location.pathname + '&mtime=%d', true);
         xmlHttp.send(null);
     }, 0);
 }
@@ -358,7 +360,7 @@ class RestViewer(object):
         """
         self.server.serve_forever()
 
-    def rest_to_html(self, rest_input, settings=None):
+    def rest_to_html(self, rest_input, settings=None, mtime=None):
         """Render ReStructuredText."""
         writer = docutils.writers.html4css1.Writer()
         if pygments is not None:
@@ -386,7 +388,7 @@ class RestViewer(object):
         except Exception as e:
             return self.render_exception(e.__class__.__name__, str(e),
                                          rest_input)
-        return self.get_markup(writer.output)
+        return self.get_markup(writer.output, mtime=mtime)
 
     def render_exception(self, title, error, source):
         html = (ERROR_TEMPLATE.replace('$title', escape(title))
@@ -394,12 +396,14 @@ class RestViewer(object):
                               .replace('$source', escape(source)))
         return self.get_markup(html)
 
-    def get_markup(self, markup):
-        if self.command is None:
-            return markup.replace('</body>', AJAX_STR + '</body>')
-        else:
+    def get_markup(self, markup, mtime=None):
+        if self.command is not None:
             return markup.replace('</title>',
                                   ' -e "' + escape(self.command) + '"</title>')
+        elif mtime is not None:
+            return markup.replace('</body>', (AJAX_STR % mtime) + '</body>')
+        else:
+            return markup
 
 
 class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator):

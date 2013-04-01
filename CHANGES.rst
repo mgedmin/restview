@@ -10,9 +10,11 @@ Changelog
   * recognize .rst extensions
 
 - Automatically reload the web page when the source file changes (LP#965746).
-  Patch by speq (sp@bsdx.org).
+  Patch by speq (sp@bsdx.org), with modifications by Eric Knibbe and Marius
+  Gedminas.
 
-- New option: restview --long-description.
+- New option: restview --long-description (shows the output of python setup.py
+  --long-description).
 
 - Add Python 3 support (LP#1093098).  Patch by Steven Myint (git@stevenmyint.com).
 

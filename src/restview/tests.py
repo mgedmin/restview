@@ -106,10 +106,6 @@ def doctest_RestViewer_rest_to_html():
         </pre>
         <p>This is an inline literal: <tt class="docutils literal"><a href="README.txt">README.txt</a></tt>.</p>
         </div>
-        <BLANKLINE>
-        <script type="text/javascript">
-        ...
-        </script>
         </body>
         </html>
 
@@ -145,10 +141,6 @@ def doctest_RestViewer_rest_to_html_css_url():
         <BLANKLINE>
         <p>Some text</p>
         </div>
-        <BLANKLINE>
-        <script type="text/javascript">
-        ...
-        </script>
         </body>
         </html>
 
@@ -192,10 +184,6 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
         Some text with an `error
         <BLANKLINE>
         </pre>
-        <BLANKLINE>
-        <script type="text/javascript">
-        ...
-        </script>
         </body>
         </html>
 
@@ -204,7 +192,7 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
     """
 
 
-def doctest_RestViewer_get_markup():
+def doctest_RestViewer_get_markup_adds_ajax():
     """Test for RestViewer.get_markup
 
         >>> viewer = RestViewer('.')
@@ -218,6 +206,32 @@ def doctest_RestViewer_get_markup():
         ... </body>
         ... </html>
         ... ''').strip())
+        <html>
+        <head>
+        <title>Title</title>
+        </head>
+        <body>
+        <p>Some body text</p>
+        </body>
+        </html>
+
+    """
+
+
+def doctest_RestViewer_get_markup_adds_ajax():
+    """Test for RestViewer.get_markup
+
+        >>> viewer = RestViewer('.')
+        >>> print(viewer.get_markup('''
+        ... <html>
+        ... <head>
+        ... <title>Title</title>
+        ... </head>
+        ... <body>
+        ... <p>Some body text</p>
+        ... </body>
+        ... </html>
+        ... ''', mtime=1364808683).strip())
         <html>
         <head>
         <title>Title</title>
@@ -239,7 +253,7 @@ def doctest_RestViewer_get_markup():
                         window.location.reload(true);
                     }
                 }
-                xmlHttp.open('HEAD', '/polling?pathname=' + location.pathname, true);
+                xmlHttp.open('HEAD', '/polling?pathname=' + location.pathname + '&mtime=1364808683', true);
                 xmlHttp.send(null);
             }, 0);
         }
