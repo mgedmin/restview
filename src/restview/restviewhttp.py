@@ -13,8 +13,8 @@ or
 or
     restviewhttp --help
 
-Needs docutils and a web browser.  Will syntax highlight if you have pygments
-installed.
+Needs docutils and a web browser. Will syntax-highlight code or doctest blocks
+if you have pygments installed.
 """
 from __future__ import print_function
 
@@ -43,14 +43,18 @@ try:
 except ImportError:
     from urllib.parse import unquote
 
+try:
+    from urlparse import parse_qs
+except ImportError:
+    from urllib.parse import parse_qs
+
 import docutils.core
 import docutils.writers.html4css1
 import time
 
 try:
     import pygments
-    import pygments.lexers
-    import pygments.formatters
+    from pygments import lexers, formatters
 except ImportError:
     pygments = None
 
@@ -62,6 +66,7 @@ except NameError:
 
 
 __version__ = "1.3.0dev"
+last_atime = 0
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -75,7 +80,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.wfile.write(content)
 
     def do_HEAD(self):
-        content = self.do_GET_or_HEAD()
+        self.do_GET_or_HEAD()
 
     def do_GET_or_HEAD(self):
         self.path = unquote(self.path)
@@ -91,24 +96,43 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     return self.handle_rest_file(root)
             else:
                 return self.handle_list(root)
-        elif self.path == '/polling':
-            while True:
-                if os.stat(self.server.renderer.root).st_mtime != self.server.renderer.root_mtime:
-                    self.server.renderer.root_mtime = os.stat(self.server.renderer.root).st_mtime
-                    self.send_response(200)
-                    self.end_headers()
-                    return ""
-                time.sleep(0.1)
-        elif '..' in self.path:
-            self.send_error(404, "File not found") # no hacking!
+        elif self.path.startswith('/polling?'):
+            saved_atime = last_atime
+            self.path = parse_qs(self.path.split('?', 1)[-1])['pathname'][0]
+            if self.path == '/':
+                self.path = os.path.basename(root)
+            self.server.renderer.root_mtime = os.stat(self.translate_path()).st_mtime
+            while last_atime == saved_atime:
+                if os.stat(self.translate_path()).st_mtime != self.server.renderer.root_mtime:
+                    try:
+                        self.send_response(200)
+                        self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
+                        self.end_headers()
+                        self.server.renderer.root_mtime = os.stat(self.translate_path()).st_mtime
+                    except Exception as e:
+                        self.log_error('%s (client closed "%s" before acknowledgement)', e, self.path)
+                    finally:
+                        return
+                time.sleep(0.2)
+            try:
+                self.send_response(204)
+                self.end_headers()
+            except Exception as e:
+                self.log_error('%s (client closed "%s" before cancellation)', e, self.path)
+            finally:
+                return
+        elif '/..' in self.path:
+            self.send_error(400, "Bad request") # no hacking!
+        elif self.path.endswith('.gif'):
+            return self.handle_image(self.translate_path(), 'image/gif')
         elif self.path.endswith('.png'):
             return self.handle_image(self.translate_path(), 'image/png')
-        elif self.path.endswith('.jpg'):
+        elif self.path.endswith('.jpg') or self.path.endswith('.jpeg'):
             return self.handle_image(self.translate_path(), 'image/jpeg')
         elif self.path.endswith('.txt') or self.path.endswith('.rst'):
             return self.handle_rest_file(self.translate_path())
         else:
-            self.send_error(404, "File not found: %s" % self.path)
+            self.send_error(501, "File type not supported: %s" % self.path)
 
     def translate_path(self):
         root = self.server.renderer.root
@@ -124,7 +148,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         try:
             data = file(filename, 'rb').read()
         except IOError:
-            self.send_error(404, "File not found")
+            self.send_error(404, "File not found: %s" % self.path)
         else:
             self.send_response(200)
             self.send_header("Content-Type", ctype)
@@ -135,13 +159,15 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def handle_rest_file(self, filename):
         try:
             f = open(filename)
+            global last_atime
+            last_atime = time.time()
             try:
                 return self.handle_rest_data(f.read())
             finally:
                 f.close()
         except IOError as e:
             self.log_error("%s", e)
-            self.send_error(404, "File not found")
+            self.send_error(404, "File not found: %s" % self.path)
 
     def handle_command(self, command):
         try:
@@ -152,16 +178,16 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 f.close()
         except OSError as e:
             self.log_error("%s" % e)
-            self.send_error(404, "Command execution failed")
+            self.send_error(500, "Command execution failed")
 
     def handle_rest_data(self, data):
         html = self.server.renderer.rest_to_html(data)
-        html += AJAX_STR
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=UTF-8")
         self.send_header("Content-Length", str(len(html)))
+        self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
         self.end_headers()
         return html
 
@@ -171,17 +197,18 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         files = []
         for dirpath, dirnames, filenames in os.walk(dirname):
             dirnames[:] = [dn for dn in dirnames
-                           if dn != '.svn' and not dn.endswith('.egg-info')]
+                           if not dn.startswith('.')
+                           and not dn.endswith('.egg-info')]
             for fn in filenames:
                 if fn.endswith('.txt') or fn.endswith('.rst'):
                     prefix = dirpath[len(dirname):]
                     files.append(os.path.join(prefix, fn))
-        files.sort()
+        files.sort(key=str.lower)
         return files
 
     def handle_dir(self, dirname):
         files = [(fn, fn) for fn in self.collect_files(dirname)]
-        html = self.render_dir_listing('RST files in %s' % dirname, files)
+        html = self.render_dir_listing("RST files in %s" % os.path.abspath(dirname), files)
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
@@ -200,7 +227,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 files.append((os.path.join(str(idx), os.path.basename(fn)),
                               fn))
-        html = self.render_dir_listing('RST files', files)
+        html = self.render_dir_listing("RST files", files)
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
@@ -218,8 +245,11 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
 DIR_TEMPLATE = """\
+<!DOCTYPE html>
 <html>
-<head><title>$title</title></head>
+<head>
+<title>$title</title>
+</head>
 <body>
 <h1>$title</h1>
 <ul>
@@ -233,36 +263,32 @@ FILE_TEMPLATE = """\
 """
 
 AJAX_STR = """
-<script>
-window.onload = function(){
-    function createXMLHttpRequest(){
-        if(window.ActiveXObject){
-            xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
-        } else if(window.XMLHttpRequest){
+<script type="text/javascript">
+var xmlHttp = null;
+window.onload = function () {
+    setTimeout(function () {
+        if (window.XMLHttpRequest) {
             xmlHttp = new XMLHttpRequest();
+        } else if (window.ActiveXObject) {
+            xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
         }
-    }
-
-    function handleStateChange(){
-        if(xmlHttp.readyState == 4){
-            window.location.reload();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == '200') {
+                window.location.reload(true);
+            }
         }
-    }
-
-    function doHttpRequest(request, url){
-        createXMLHttpRequest();
-        xmlHttp.onreadystatechange = handleStateChange;
-        xmlHttp.open(request, url, true);
+        xmlHttp.open('HEAD', '/polling?pathname=' + location.pathname, true);
         xmlHttp.send(null);
-    }
-
-    doHttpRequest('GET', '/polling');
+    }, 0);
 }
-
+window.onbeforeunload = function () {
+    xmlHttp.abort();
+}
 </script>
 """
 
 ERROR_TEMPLATE = """\
+<!DOCTYPE html>
 <html>
 <head>
 <title>$title</title>
@@ -311,7 +337,6 @@ class RestViewer(object):
 
     def __init__(self, root, command=None):
         self.root = root
-        self.root_mtime = os.stat(root).st_mtime
         self.command = command
 
     def listen(self):
@@ -345,7 +370,7 @@ class RestViewer(object):
                                   'embed_stylesheet': True}
         else:
             settings_overrides = {}
-
+        settings_overrides['syntax_highlight'] = 'short'
         if self.strict:
             settings_overrides['halt_level'] = 1
 
@@ -358,13 +383,20 @@ class RestViewer(object):
         except Exception as e:
             return self.render_exception(e.__class__.__name__, str(e),
                                          rest_input)
-        return writer.output
+        return self.get_markup(writer.output)
 
     def render_exception(self, title, error, source):
         html = (ERROR_TEMPLATE.replace('$title', cgi.escape(title))
                               .replace('$error', cgi.escape(error))
                               .replace('$source', cgi.escape(source)))
-        return html
+        return self.get_markup(html)
+
+    def get_markup(self, markup):
+        if self.command is None:
+            return markup.replace('</body>', AJAX_STR + '</body>')
+        else:
+            return markup.replace('</title>',
+                                  ' -e "' + cgi.escape(self.command) + '"</title>')
 
 
 class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator):
@@ -372,6 +404,11 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
     in_doctest = False
     in_text = False
     in_reference = False
+    formatter_styles = formatters.HtmlFormatter(style='default').get_style_defs('pre')
+
+    def __init__(self, document):
+        docutils.writers.html4css1.HTMLTranslator.__init__(self, document)
+        self.body_prefix[:0] = ['<style type="text/css">\n', self.formatter_styles, '\n</style>\n']
 
     def visit_doctest_block(self, node):
         docutils.writers.html4css1.HTMLTranslator.visit_doctest_block(self, node)
@@ -384,12 +421,8 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
     def visit_Text(self, node):
         if self.in_doctest:
             text = node.astext()
-            lexer = pygments.lexers.PythonConsoleLexer()
-            # noclasses forces inline styles, which is suboptimal
-            # figure out a way to include formatter.get_style_defs() into
-            # our CSS
-            formatter = pygments.formatters.HtmlFormatter(nowrap=True,
-                                                          noclasses=True)
+            lexer = lexers.PythonConsoleLexer()
+            formatter = formatters.HtmlFormatter(nowrap=True)
             self.body.append(pygments.highlight(text, lexer, formatter))
         else:
             text = node.astext()
