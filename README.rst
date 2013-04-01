@@ -22,3 +22,8 @@ This is so useful restview has a shortcut for it ::
 
   restview --long-description --strict
 
+
+|buildstatus|_
+
+.. |buildstatus| image:: https://api.travis-ci.org/mgedmin/restview.png?branch=master
+.. _buildstatus: https://travis-ci.org/mgedmin/restview
