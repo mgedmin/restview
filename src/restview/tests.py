@@ -282,9 +282,9 @@ class TestMain(unittest.TestCase):
     def test_all_is_well(self):
         self.run_main('.', serve_called=True, browser_launched=True)
 
-##  def test_multiple_files(self): # XXX: broken at the moment!
-##      self.run_main('README.rst', 'CHANGES.rst', serve_called=True,
-##                    browser_launched=True)
+    def test_multiple_files(self):
+        self.run_main('README.rst', 'CHANGES.rst', serve_called=True,
+                      browser_launched=True)
 
     def test_command(self):
         self.run_main('--long-description',
