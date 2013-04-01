@@ -26,8 +26,11 @@ def doctest_MyRequestHandler_render_dir_listing():
         ...     ('1/README.rst', 'README.rst'),
         ...     ('2/CHANGES.rst', 'CHANGES.rst'),
         ... ]))
+        <!DOCTYPE html>
         <html>
-        <head><title>Files in .</title></head>
+        <head>
+        <title>Files in .</title>
+        </head>
         <body>
         <h1>Files in .</h1>
         <ul>
@@ -79,6 +82,9 @@ def doctest_RestViewer_rest_to_html():
          * (I didn't like the default one)
         ...
         </style>
+        <style type="text/css">
+        ...
+        </style>
         </head>
         <body>
         <div class="document" id="example">
@@ -87,7 +93,7 @@ def doctest_RestViewer_rest_to_html():
         <p>This is a doctest:</p>
         <blockquote>
         <pre class="doctest-block">
-        <span style="color: #000080; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #666666">2</span> <span style="color: #666666">+</span> <span style="color: #666666">2</span>
+        <span class="gp">&gt;&gt;&gt; </span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span>
         <BLANKLINE>
         </pre>
         </blockquote>
@@ -100,6 +106,10 @@ def doctest_RestViewer_rest_to_html():
         </pre>
         <p>This is an inline literal: <tt class="docutils literal"><a href="README.txt">README.txt</a></tt>.</p>
         </div>
+        <BLANKLINE>
+        <script type="text/javascript">
+        ...
+        </script>
         </body>
         </html>
 
@@ -108,6 +118,9 @@ def doctest_RestViewer_rest_to_html():
 
 def doctest_RestViewer_rest_to_html_css_url():
     """Test for RestViewer.rest_to_html
+
+    XXX: this shows pygments styles inlined *after* the external css, which
+    means it's hard to override them!
 
         >>> viewer = RestViewer('.')
         >>> viewer.css_url = 'http://example.com/my.css'
@@ -122,6 +135,9 @@ def doctest_RestViewer_rest_to_html_css_url():
         ...
         <title></title>
         <link rel="stylesheet" href="http://example.com/my.css" type="text/css" />
+        <style type="text/css">
+        ...
+        </style>
         </head>
         <body>
         <div class="document">
@@ -129,6 +145,10 @@ def doctest_RestViewer_rest_to_html_css_url():
         <BLANKLINE>
         <p>Some text</p>
         </div>
+        <BLANKLINE>
+        <script type="text/javascript">
+        ...
+        </script>
         </body>
         </html>
 
@@ -147,6 +167,7 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
         >>> print(viewer.rest_to_html('''
         ... Some text with an `error
         ... ''').strip())
+        <!DOCTYPE html>
         <html>
         <head>
         <title>SystemMessage</title>
@@ -171,6 +192,10 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
         Some text with an `error
         <BLANKLINE>
         </pre>
+        <BLANKLINE>
+        <script type="text/javascript">
+        ...
+        </script>
         </body>
         </html>
 
