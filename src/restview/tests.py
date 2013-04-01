@@ -352,7 +352,8 @@ class TestMain(unittest.TestCase):
                                        rc=2)
         self.assertEqual(stderr.splitlines()[-1],
              'restview: error: specify a command (-e) or a file/directory,'
-             ' but not both')
+             ' but not both',
+             stderr)
 
     def test_all_is_well(self):
         self.run_main('.', serve_called=True, browser_launched=True)
