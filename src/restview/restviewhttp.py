@@ -36,7 +36,10 @@ try:
 except ImportError:
     import socketserver as SocketServer
 
-import cgi
+try:
+    from html import escape
+except ImportError:
+    from cgi import escape
 
 try:
     from urllib import unquote
@@ -237,10 +240,10 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return html
 
     def render_dir_listing(self, title, files):
-        files = ''.join([FILE_TEMPLATE.replace('$href', cgi.escape(href))
-                                      .replace('$file', cgi.escape(fn))
+        files = ''.join([FILE_TEMPLATE.replace('$href', escape(href))
+                                      .replace('$file', escape(fn))
                          for href, fn in files])
-        return (DIR_TEMPLATE.replace('$title', cgi.escape(title))
+        return (DIR_TEMPLATE.replace('$title', escape(title))
                             .replace('$files', files))
 
 
@@ -386,9 +389,9 @@ class RestViewer(object):
         return self.get_markup(writer.output)
 
     def render_exception(self, title, error, source):
-        html = (ERROR_TEMPLATE.replace('$title', cgi.escape(title))
-                              .replace('$error', cgi.escape(error))
-                              .replace('$source', cgi.escape(source)))
+        html = (ERROR_TEMPLATE.replace('$title', escape(title))
+                              .replace('$error', escape(error))
+                              .replace('$source', escape(source)))
         return self.get_markup(html)
 
     def get_markup(self, markup):
@@ -396,7 +399,7 @@ class RestViewer(object):
             return markup.replace('</body>', AJAX_STR + '</body>')
         else:
             return markup.replace('</title>',
-                                  ' -e "' + cgi.escape(self.command) + '"</title>')
+                                  ' -e "' + escape(self.command) + '"</title>')
 
 
 class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator):
