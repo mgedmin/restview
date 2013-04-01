@@ -204,6 +204,81 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
     """
 
 
+def doctest_RestViewer_get_markup():
+    """Test for RestViewer.get_markup
+
+        >>> viewer = RestViewer('.')
+        >>> print(viewer.get_markup('''
+        ... <html>
+        ... <head>
+        ... <title>Title</title>
+        ... </head>
+        ... <body>
+        ... <p>Some body text</p>
+        ... </body>
+        ... </html>
+        ... ''').strip())
+        <html>
+        <head>
+        <title>Title</title>
+        </head>
+        <body>
+        <p>Some body text</p>
+        <BLANKLINE>
+        <script type="text/javascript">
+        var xmlHttp = null;
+        window.onload = function () {
+            setTimeout(function () {
+                if (window.XMLHttpRequest) {
+                    xmlHttp = new XMLHttpRequest();
+                } else if (window.ActiveXObject) {
+                    xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                xmlHttp.onreadystatechange = function () {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == '200') {
+                        window.location.reload(true);
+                    }
+                }
+                xmlHttp.open('HEAD', '/polling?pathname=' + location.pathname, true);
+                xmlHttp.send(null);
+            }, 0);
+        }
+        window.onbeforeunload = function () {
+            xmlHttp.abort();
+        }
+        </script>
+        </body>
+        </html>
+
+    """
+
+
+def doctest_RestViewer_get_markup_command_output():
+    """Test for RestViewer.get_markup
+
+        >>> viewer = RestViewer('.', command='python setup.py --long-description')
+        >>> print(viewer.get_markup('''
+        ... <html>
+        ... <head>
+        ... <title>restview</title>
+        ... </head>
+        ... <body>
+        ... <p>Some body text</p>
+        ... </body>
+        ... </html>
+        ... ''').strip())
+        <html>
+        <head>
+        <title>restview -e "python setup.py --long-description"</title>
+        </head>
+        <body>
+        <p>Some body text</p>
+        </body>
+        </html>
+
+    """
+
+
 class TestRestViewer(unittest.TestCase):
 
     def test_serve(self):
