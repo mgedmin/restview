@@ -411,7 +411,7 @@ class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator
     in_doctest = False
     in_text = False
     in_reference = False
-    formatter_styles = formatters.HtmlFormatter(style='default').get_style_defs('pre')
+    formatter_styles = formatters.HtmlFormatter(style='colorful').get_style_defs('pre')
 
     def __init__(self, document):
         docutils.writers.html4css1.HTMLTranslator.__init__(self, document)
