@@ -124,7 +124,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.log_error('%s (client closed "%s" before cancellation)', e, self.path)
             finally:
                 return
-        elif '/..' in self.path:
+        elif '..' in self.path:
             self.send_error(400, "Bad request") # no hacking!
         elif self.path.endswith('.gif'):
             return self.handle_image(self.translate_path(), 'image/gif')
