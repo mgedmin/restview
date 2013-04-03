@@ -1,8 +1,8 @@
 Changelog
 =========
 
-1.3.0 (unreleased)
-------------------
+2.0 (unreleased)
+----------------
 
 - Improve auto-linkification of local file names:
 
@@ -22,6 +22,8 @@ Changelog
 
 - Moved to Github.
 
+- 100% test coverage.
+
 - Many improvements by Eric Knibbe:
 
   * ``restview dirname`` now ignores hidden subdirectories.
@@ -31,7 +33,6 @@ Changelog
   * Syntax highlighting for code blocks.
   * improved HTTP error messages.
   * HTTP headers to prevent browser caching of dynamic content.
-
 
 1.2.2 (2010-09-14)
 ------------------
