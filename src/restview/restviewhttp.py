@@ -152,7 +152,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def handle_image(self, filename, ctype):
         try:
-            data = file(filename, 'rb').read()
+            data = open(filename, 'rb').read()
         except IOError:
             self.send_error(404, "File not found: %s" % self.path)
         else:
