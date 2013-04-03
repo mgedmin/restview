@@ -192,7 +192,7 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
     """
 
 
-def doctest_RestViewer_get_markup_adds_ajax():
+def doctest_RestViewer_get_markup():
     """Test for RestViewer.get_markup
 
         >>> viewer = RestViewer('.')
