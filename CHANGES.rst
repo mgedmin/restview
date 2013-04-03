@@ -4,10 +4,11 @@ Changelog
 2.0 (unreleased)
 ----------------
 
-- Improve auto-linkification of local file names:
+- Python 3 support (LP#1093098).  Patch by Steven Myint (git@stevenmyint.com).
 
-  * allow subdirectories
-  * recognize .rst extensions
+- Moved to Github.
+
+- 100% test coverage.
 
 - Automatically reload the web page when the source file changes (LP#965746).
   Patch by speq (sp@bsdx.org), with modifications by Eric Knibbe and Marius
@@ -16,13 +17,12 @@ Changelog
 - New option: restview --long-description (shows the output of python setup.py
   --long-description).
 
-- Add Python 3 support (LP#1093098).  Patch by Steven Myint (git@stevenmyint.com).
-
 - New option: restview --strict. Patch by Steven Myint (git@stevenmyint.com).
 
-- Moved to Github.
+- Improve auto-linkification of local file names:
 
-- 100% test coverage.
+  * allow subdirectories
+  * recognize .rst extensions
 
 - Many improvements by Eric Knibbe:
 
@@ -30,7 +30,7 @@ Changelog
   * files in directory listings are sorted case-insensitively.
   * allow serving gif and jpg images.
   * CSS rules for rubric, sidebars, and many other things.
-  * Syntax highlighting for code blocks.
+  * syntax highlighting for code blocks.
   * improved HTTP error messages.
   * HTTP headers to prevent browser caching of dynamic content.
 
