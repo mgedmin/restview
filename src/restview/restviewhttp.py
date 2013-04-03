@@ -26,6 +26,7 @@ import socket
 import optparse
 import threading
 import webbrowser
+from contextlib import closing
 
 try:
     import BaseHTTPServer
@@ -153,7 +154,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def handle_image(self, filename, ctype):
         try:
-            data = open(filename, 'rb').read()
+            with open(filename, 'rb') as f:
+                data = f.read()
         except IOError:
             self.send_error(404, "File not found: %s" % self.path)
         else:
@@ -165,23 +167,17 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def handle_rest_file(self, filename):
         try:
-            f = open(filename)
-            try:
+            with open(filename) as f:
                 mtime = os.fstat(f.fileno()).st_mtime
                 return self.handle_rest_data(f.read(), mtime=mtime)
-            finally:
-                f.close()
         except IOError as e:
             self.log_error("%s", e)
             self.send_error(404, "File not found: %s" % self.path)
 
     def handle_command(self, command):
         try:
-            f = os.popen(command)
-            try:
+            with closing(os.popen(command)) as f:
                 return self.handle_rest_data(f.read())
-            finally:
-                f.close()
         except OSError as e:
             self.log_error("%s", e)
             self.send_error(500, "Command execution failed")
