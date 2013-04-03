@@ -86,6 +86,9 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET_or_HEAD(self):
         self.path = unquote(self.path)
+        if '..' in self.path:
+            self.send_error(400, "Bad request") # no hacking!
+            return
         root = self.server.renderer.root
         command = self.server.renderer.command
         if self.path == '/':
@@ -107,8 +110,6 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 pathname = self.translate_path(pathname)
             old_mtime = int(query['mtime'][0])
             return self.handle_polling(pathname, old_mtime)
-        elif '..' in self.path:
-            self.send_error(400, "Bad request") # no hacking!
         elif self.path.endswith('.gif'):
             return self.handle_image(self.translate_path(), 'image/gif')
         elif self.path.endswith('.png'):
@@ -182,7 +183,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             finally:
                 f.close()
         except OSError as e:
-            self.log_error("%s" % e)
+            self.log_error("%s", e)
             self.send_error(500, "Command execution failed")
 
     def handle_rest_data(self, data, mtime=None):

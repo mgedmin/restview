@@ -1,4 +1,7 @@
 import doctest
+import errno
+import os
+import socket
 import unittest
 import webbrowser
 
@@ -12,10 +15,333 @@ from mock import Mock, patch
 from restview.restviewhttp import (MyRequestHandler, RestViewer,
                                    get_host_name, launch_browser, main)
 
+try:
+    unicode
+except NameError:
+    unicode = str
+
 
 class MyRequestHandlerForTests(MyRequestHandler):
     def __init__(self):
-        pass
+        self._headers = {}
+        self.log = []
+        self.server = Mock()
+        self.server.renderer.rest_to_html = lambda data, mtime=None: \
+            unicode('HTML for %s with AJAX poller for %s' % (data, mtime))
+    def send_response(self, status):
+        self.status = status
+    def send_header(self, header, value):
+        self._headers[header] = value
+    def end_headers(self):
+        self.headers = self._headers
+    def send_error(self, status, body):
+        self.status = status
+        self.error_body = body
+    def log_error(self, message, *args):
+        if args:
+            message = message % args
+        self.log.append(message)
+
+
+class TestMyRequestHandler(unittest.TestCase):
+
+    def _os_walk(self, dirpath):
+        dirnames = ['.svn', '.tox', 'subdir', 'mypackage.egg-info']
+        filenames = ['a.txt', 'z.rst', 'unrelated.py']
+        yield dirpath, dirnames, filenames
+        for subdir in dirnames:
+            yield os.path.join(dirpath, subdir), [], ['b.txt', 'c.py']
+
+    def _raise_oserror(self, *args):
+        raise OSError(errno.ENOENT, "no such file or directory")
+
+    def _raise_socket_error(self, *args):
+        raise socket.error("connection reset by peer")
+
+    def test_do_GET(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/a.txt'
+        handler.server.renderer.root = '/root/file.txt'
+        handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
+        handler.wfile = StringIO()
+        handler.do_GET()
+        self.assertEqual(handler.wfile.getvalue(),
+                         'HTML for /root/a.txt')
+
+    def test_do_HEAD(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/a.txt'
+        handler.server.renderer.root = '/root/file.txt'
+        handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
+        handler.wfile = StringIO()
+        handler.do_HEAD()
+        self.assertEqual(handler.wfile.getvalue(), '')
+
+    def test_do_GET_or_HEAD_root_when_file(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/'
+        handler.server.renderer.root = '/root/file.txt'
+        handler.server.renderer.command = None
+        handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
+        with patch('os.path.isdir', lambda dir: False):
+            body = handler.do_GET_or_HEAD()
+        self.assertEqual(body, 'HTML for /root/file.txt')
+
+    def test_do_GET_or_HEAD_root_when_dir(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/'
+        handler.server.renderer.root = '/root/'
+        handler.server.renderer.command = None
+        handler.handle_dir = lambda fn: 'Files in %s' % fn
+        with patch('os.path.isdir', lambda dir: True):
+            body = handler.do_GET_or_HEAD()
+        self.assertEqual(body, 'Files in /root/')
+
+    def test_do_GET_or_HEAD_root_when_list(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/'
+        handler.server.renderer.root = ['/root/', '/root2/']
+        handler.server.renderer.command = None
+        handler.handle_list = lambda roots: 'Files in %s' % ", ".join(roots)
+        body = handler.do_GET_or_HEAD()
+        self.assertEqual(body, 'Files in /root/, /root2/')
+
+    def test_do_GET_or_HEAD_root_when_command(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/'
+        handler.server.renderer.root = None
+        handler.server.renderer.command = 'cat README.rst'
+        handler.handle_command = lambda cmd: 'Output of %s' % cmd
+        body = handler.do_GET_or_HEAD()
+        self.assertEqual(body, 'Output of cat README.rst')
+
+    def test_do_GET_or_HEAD_polling(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/polling?pathname=a.txt&mtime=12345'
+        handler.server.renderer.root = '/root/'
+        handler.handle_polling = lambda fn, mt: 'Got update for %s since %s' % (fn, mt)
+        body = handler.do_GET_or_HEAD()
+        self.assertEqual(body, 'Got update for /root/a.txt since 12345')
+
+    def test_do_GET_or_HEAD_polling_of_root(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/polling?pathname=/&mtime=12345'
+        handler.server.renderer.root = '/root/a.txt'
+        handler.handle_polling = lambda fn, mt: 'Got update for %s since %s' % (fn, mt)
+        body = handler.do_GET_or_HEAD()
+        self.assertEqual(body, 'Got update for /root/a.txt since 12345')
+
+    def test_do_GET_or_HEAD_prevent_sandbox_climbing_attacks(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/polling?pathname=../../../etc/passwd&mtime=12345'
+        handler.server.renderer.root = '/root/a.txt'
+        handler.do_GET_or_HEAD()
+        self.assertEqual(handler.status, 400)
+        self.assertEqual(handler.error_body, "Bad request")
+
+    def test_do_GET_or_HEAD_images(self):
+        for filename, ctype in [('a.png', 'image/png'),
+                                ('a.gif', 'image/gif'),
+                                ('a.jpg', 'image/jpeg'),
+                                ('a.jpeg', 'image/jpeg')]:
+            handler = MyRequestHandlerForTests()
+            handler.path = '/' + filename
+            handler.server.renderer.root = '/root/a.txt'
+            handler.handle_image = lambda fn, ct: '%s (%s)' % (fn, ct)
+            body = handler.do_GET_or_HEAD()
+            self.assertEqual(body, '/root/%s (%s)' % (filename, ctype))
+
+    def test_do_GET_or_HEAD_rst_files(self):
+        for filename in ['a.txt', 'a.rst']:
+            handler = MyRequestHandlerForTests()
+            handler.path = '/' + filename
+            handler.server.renderer.root = '/root/file.txt'
+            handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
+            body = handler.do_GET_or_HEAD()
+            self.assertEqual(body, 'HTML for /root/%s' % filename)
+
+    def test_do_GET_or_HEAD_other_files(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/a.py'
+        handler.server.renderer.root = '/root/file.txt'
+        handler.do_GET_or_HEAD()
+        self.assertEqual(handler.status, 501)
+        self.assertEqual(handler.error_body, "File type not supported: /a.py")
+
+    def test_handle_polling(self):
+        handler = MyRequestHandlerForTests()
+        filename = os.path.join(os.path.dirname(__file__), '__init__.py')
+        with patch('time.sleep') as sleep:
+            stat = {filename: [Mock(st_mtime=123455), Mock(st_mtime=123456)]}
+            with patch('os.stat', lambda fn: stat[fn].pop(0)):
+                handler.handle_polling(filename, 123455)
+            sleep.assert_called_once_with(0.2)
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Cache-Control'],
+                         "no-cache, no-store, max-age=0")
+
+    def test_handle_polling_handles_interruptions(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/polling?pathname=__init__.py&mtime=123455'
+        handler.send_response = self._raise_socket_error
+        filename = os.path.join(os.path.dirname(__file__), '__init__.py')
+        stat = {filename: [Mock(st_mtime=123456)]}
+        with patch('os.stat', lambda fn: stat[fn].pop(0)):
+            handler.handle_polling(filename, 123455)
+        self.assertEqual(handler.log,
+             ['connection reset by peer (client closed "/polling?pathname=__init__.py&mtime=123455" before acknowledgement)'])
+
+    def test_translate_path_when_root_is_a_file(self):
+        handler = MyRequestHandlerForTests()
+        handler.server.renderer.root = '/root/file.txt'
+        handler.path = '/a.txt'
+        with patch('os.path.isdir', lambda dir: False):
+            self.assertEqual(handler.translate_path(), '/root/a.txt')
+            self.assertEqual(handler.translate_path('/file.png'),
+                             '/root/file.png')
+
+    def test_translate_path_when_root_is_a_directory(self):
+        handler = MyRequestHandlerForTests()
+        handler.server.renderer.root = '/root'
+        handler.path = '/a.txt'
+        with patch('os.path.isdir', lambda dir: True):
+            self.assertEqual(handler.translate_path(), '/root/a.txt')
+            self.assertEqual(handler.translate_path('/file.txt'),
+                             '/root/file.txt')
+
+    def test_translate_path_when_root_is_a_sequence(self):
+        handler = MyRequestHandlerForTests()
+        handler.server.renderer.root = ['/root', '/root2/file.txt']
+        handler.path = '/0/a.txt'
+        with patch('os.path.isdir', lambda dir: '.' not in dir):
+            self.assertEqual(handler.translate_path(), '/root/a.txt')
+            self.assertEqual(handler.translate_path('/1/b.txt'),
+                             '/root2/b.txt')
+
+    def test_handle_image(self):
+        handler = MyRequestHandlerForTests()
+        filename = os.path.join(os.path.dirname(__file__), '__init__.py')
+        body = handler.handle_image(filename, 'image/python') # ha ha
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Content-Type'],
+                         "image/python")
+        self.assertEqual(handler.headers['Content-Length'],
+                         str(len(body)))
+        self.assertTrue(isinstance(body, bytes))
+
+    def test_handle_image_error(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/nosuchfile.png'
+        handler.handle_image('nosuchfile.png', 'image/png')
+        self.assertEqual(handler.status, 404)
+        self.assertEqual(handler.error_body,
+                         "File not found: /nosuchfile.png")
+
+    def test_handle_rest_file(self):
+        handler = MyRequestHandlerForTests()
+        filename = os.path.join(os.path.dirname(__file__), '__init__.py')
+        mtime = os.stat(filename).st_mtime
+        body = handler.handle_rest_file(filename)
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Content-Type'],
+                         "text/html; charset=UTF-8")
+        self.assertEqual(handler.headers['Content-Length'],
+                         str(len(body)))
+        self.assertEqual(handler.headers['Cache-Control'],
+                         "no-cache, no-store, max-age=0")
+        self.assertTrue(body.startswith(b'HTML for'))
+        self.assertTrue(body.endswith(('with AJAX poller for %s' % mtime).encode()))
+
+    def test_handle_rest_file_error(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/nosuchfile.txt'
+        handler.handle_rest_file('nosuchfile.txt')
+        self.assertEqual(handler.status, 404)
+        self.assertEqual(handler.error_body,
+                         "File not found: /nosuchfile.txt")
+        self.assertEqual(handler.log,
+             ["[Errno 2] No such file or directory: 'nosuchfile.txt'"])
+
+    def test_handle_command(self):
+        handler = MyRequestHandlerForTests()
+        with patch('os.popen', lambda cmd: StringIO('data from %s' % cmd)):
+            body = handler.handle_command('cat README.rst')
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Content-Type'],
+                         "text/html; charset=UTF-8")
+        self.assertEqual(handler.headers['Content-Length'],
+                         str(len(body)))
+        self.assertEqual(handler.headers['Cache-Control'],
+                         "no-cache, no-store, max-age=0")
+        self.assertEqual(body,
+                         b'HTML for data from cat README.rst'
+                         b' with AJAX poller for None')
+
+    def test_handle_command_error(self):
+        handler = MyRequestHandlerForTests()
+        with patch('os.popen', self._raise_oserror):
+            handler.handle_command('cat README.rst')
+        self.assertEqual(handler.status, 500)
+        self.assertEqual(handler.error_body,
+                         'Command execution failed')
+        self.assertEqual(handler.log, ["[Errno 2] no such file or directory"])
+
+    def test_handle_rest_data(self):
+        handler = MyRequestHandlerForTests()
+        body = handler.handle_rest_data("*Hello*", mtime=1364808683)
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Content-Type'],
+                         "text/html; charset=UTF-8")
+        self.assertEqual(handler.headers['Content-Length'],
+                         str(len(body)))
+        self.assertEqual(handler.headers['Cache-Control'],
+                         "no-cache, no-store, max-age=0")
+        self.assertEqual(body,
+                         b'HTML for *Hello* with AJAX poller for 1364808683')
+
+    def test_collect_files(self):
+        handler = MyRequestHandlerForTests()
+        with patch('os.walk', self._os_walk):
+            files = handler.collect_files('/path/to/dir')
+        self.assertEqual(files, ['a.txt', 'subdir/b.txt', 'z.rst'])
+
+    def test_handle_dir(self):
+        handler = MyRequestHandlerForTests()
+        handler.collect_files = lambda dir: ['a.txt', 'b/c.txt']
+        handler.render_dir_listing = lambda title, files: \
+                unicode("<title>%s</title>\n%s" % (
+                    title,
+                    '\n'.join('%s - %s' % (path, fn) for path, fn in files)))
+        body = handler.handle_dir('/path/to/dir')
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Content-Type'],
+                         "text/html; charset=UTF-8")
+        self.assertEqual(handler.headers['Content-Length'],
+                         str(len(body)))
+        self.assertEqual(body,
+                         b"<title>RST files in /path/to/dir</title>\n"
+                         b"a.txt - a.txt\n"
+                         b"b/c.txt - b/c.txt")
+
+    def test_handle_list(self):
+        handler = MyRequestHandlerForTests()
+        handler.collect_files = lambda dir: ['a.txt', 'b/c.txt']
+        handler.render_dir_listing = lambda title, files: \
+                unicode("<title>%s</title>\n%s" % (
+                    title,
+                    '\n'.join('%s - %s' % (path, fn) for path, fn in files)))
+        with patch('os.path.isdir', lambda fn: fn == 'subdir'):
+            body = handler.handle_list(['/path/to/file.txt', 'subdir'])
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Content-Type'],
+                         "text/html; charset=UTF-8")
+        self.assertEqual(handler.headers['Content-Length'],
+                         str(len(body)))
+        self.assertEqual(body,
+                         b"<title>RST files</title>\n"
+                         b"0/file.txt - /path/to/file.txt\n"
+                         b"1/a.txt - subdir/a.txt\n"
+                         b"1/b/c.txt - subdir/b/c.txt")
 
 
 def doctest_MyRequestHandler_render_dir_listing():
@@ -343,7 +669,7 @@ class TestMain(unittest.TestCase):
                             except SystemExit as e:
                                 self.assertEqual(e.args[0], expected_exit_code)
                             else:
-                                if not serve_called:
+                                if not serve_called: # pragma: nocover
                                     self.fail("main() did not raise SystemExit")
                             if serve_called:
                                 self.assertTrue(self._serve_called)
@@ -401,6 +727,7 @@ class TestMain(unittest.TestCase):
 
 def test_suite():
     return unittest.TestSuite([
+        unittest.makeSuite(TestMyRequestHandler),
         unittest.makeSuite(TestRestViewer),
         unittest.makeSuite(TestGlobals),
         unittest.makeSuite(TestMain),
