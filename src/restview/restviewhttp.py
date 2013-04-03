@@ -357,6 +357,9 @@ class RestViewer(object):
         """
         self.server.serve_forever()
 
+    def close(self):
+        self.server.server_close()
+
     def rest_to_html(self, rest_input, settings=None, mtime=None):
         """Render ReStructuredText."""
         writer = docutils.writers.html4css1.Writer()
@@ -596,14 +599,16 @@ def main():
             parser.error(str(e))
     host = get_host_name(server.local_address[0])
     port = server.listen()
-    url = 'http://%s:%d/' % (host, port)
-    print("Listening on %s" % url)
-    if opts.browser:
-        launch_browser(url)
     try:
+        url = 'http://%s:%d/' % (host, port)
+        print("Listening on %s" % url)
+        if opts.browser:
+            launch_browser(url)
         server.serve()
     except KeyboardInterrupt:
         pass
+    finally:
+        server.close()
 
 
 if __name__ == '__main__':

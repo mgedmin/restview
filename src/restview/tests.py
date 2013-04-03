@@ -668,8 +668,8 @@ class TestMain(unittest.TestCase):
                                 main()
                             except SystemExit as e:
                                 self.assertEqual(e.args[0], expected_exit_code)
-                            else:
-                                if not serve_called: # pragma: nocover
+                            else: # pragma: nocover
+                                if not serve_called:
                                     self.fail("main() did not raise SystemExit")
                             if serve_called:
                                 self.assertTrue(self._serve_called)
@@ -708,8 +708,9 @@ class TestMain(unittest.TestCase):
 
     def test_specify_listen_address(self):
         with patch.object(RestViewer, 'listen'):
-            self.run_main('-l', '0.0.0.0:8080', '.',
-                        serve_called=True, browser_launched=True)
+            with patch.object(RestViewer, 'close'):
+                self.run_main('-l', '0.0.0.0:8080', '.',
+                            serve_called=True, browser_launched=True)
 
     def test_specify_invalid_listen_address(self):
         stdout, stderr = self.run_main('-l', 'nonsense', '.', rc=2)
