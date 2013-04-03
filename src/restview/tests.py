@@ -218,7 +218,7 @@ def doctest_RestViewer_get_markup_adds_ajax():
     """
 
 
-def doctest_RestViewer_get_markup_adds_ajax():
+def doctest_RestViewer_get_markup_adds_ajax_with_mtime():
     """Test for RestViewer.get_markup
 
         >>> viewer = RestViewer('.')
