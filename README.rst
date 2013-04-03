@@ -27,25 +27,21 @@ This is so useful restview has a shortcut for it ::
 Synopsis
 ========
 
-Usage: restview [options] filename-or-directory [...]
+Usage: ``restview [options] filename-or-directory [...]``
 
-Serve ReStructuredText files over HTTP.
-
-Options:
-
-  -h, --help            show this help message and exit
-  -l LISTEN, --listen=LISTEN
-                        listen on a given port (or interface:port, e.g.
-                        \*:8080) [default: random port on localhost]
-  -b, --browser         open a web browser [default: only if -l was not
-                        specified]
-  -e COMMAND, --execute=COMMAND
-                        run a command to produce ReStructuredText
-  --long-description    run "python setup.py --long-description" to produce
-                        ReStructuredText
-  --css=URL-or-FILENAME
-                        use the specified stylesheet
-  --strict              halt at the slightest problem
+-h, --help            show this help message and exit
+-l PORT, --listen=PORT
+                      listen on a given port (or interface:port, e.g.
+                      \*:8080) [default: random port on localhost]
+-b, --browser         open a web browser [default: only if -l was not
+                      specified]
+-e COMMAND, --execute=COMMAND
+                      run a command to produce ReStructuredText
+--long-description    run "python setup.py --long-description" to produce
+                      ReStructuredText
+--css=URL-or-FILENAME
+                      use the specified stylesheet
+--strict              halt at the slightest problem
 
 
 .. |buildstatus| image:: https://api.travis-ci.org/mgedmin/restview.png?branch=master
