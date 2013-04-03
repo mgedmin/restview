@@ -555,14 +555,14 @@ def main():
                       help='open a web browser [default: only if -l'
                            ' was not specified]',
                       action='store_true', default=None)
-    parser.add_option('-e', '--execute',
+    parser.add_option('-e', '--execute', metavar='COMMAND',
                       help='run a command to produce ReStructuredText',
                       default=None)
     parser.add_option('--long-description',
                       help='run "python setup.py --long-description" to produce ReStructuredText',
                       action='store_const', dest='execute',
                       const='python setup.py --long-description')
-    parser.add_option('--css',
+    parser.add_option('--css', metavar='URL-or-FILENAME',
                       help='use the specified stylesheet',
                       action='store', dest='css_path', default=None)
     parser.add_option('--strict',
