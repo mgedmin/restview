@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.0.1 (unreleased)
+------------------
+
+- No changes yet.
+
+
 2.0 (2013-04-04)
 ----------------
 
@@ -34,10 +40,12 @@ Changelog
   * improved HTTP error messages.
   * HTTP headers to prevent browser caching of dynamic content.
 
+
 1.2.2 (2010-09-14)
 ------------------
 
 - setup.py no longer requires docutils (LP#637423).
+
 
 1.2.1 (2010-09-12)
 ------------------
@@ -45,6 +53,7 @@ Changelog
 - Handle spaces and other special characters in URLs (LP#616335).
 
 - Don't linkify filenames inside external references (LP#634827).
+
 
 1.2 (2010-08-06)
 ----------------
@@ -54,37 +63,44 @@ Changelog
 - New command-line option, -e COMMAND.
 - Added styles for admonitions; many other important styles are still missing.
 
+
 1.1.3 (2009-10-25)
 ------------------
 
 - Spell 'extras_require' correctly in setup.py (LP#459840).
 - Add a MANIFEST.in for complete source distributions (LP#459845).
 
+
 1.1.2 (2009-10-14)
 ------------------
 
 - Fix for 'localhost' name resolution error on Mac OS X.
+
 
 1.1.1 (2009-07-13)
 ------------------
 
 - Launches the web server in the background.
 
+
 1.1.0 (2008-08-26)
 ------------------
 
 - Accepts any number of files and directories on the command line.
+
 
 1.0.1 (2008-07-26)
 ------------------
 
 - New option: --css.  Accepts a filename or a HTTP/HTTPS URL.
 
+
 1.0.0 (2008-07-26)
 ------------------
 
 - Bumped version number to reflect the stability.
 - Minor CSS tweaks.
+
 
 0.0.5 (2007-09-29)
 ------------------
@@ -93,15 +109,18 @@ Changelog
 - Use pygments (if available) to syntax-highlight doctest blocks.
 - Handle JPEG images.
 
+
 0.0.4 (2007-09-28)
 ------------------
 
 - Remove the unstable Gtk+ version.
 
+
 0.0.3 (2007-09-28)
 ------------------
 
 - Use setuptools for packaging.
+
 
 0.0.2 (2007-01-21)
 ------------------
@@ -112,6 +131,7 @@ Changelog
 - Unicode bugfix.
 - Can browse directory trees.
 - Can serve images.
+
 
 0.0.1 (2005-12-06)
 ------------------
