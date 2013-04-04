@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.0 (unreleased)
+2.0 (2013-04-04)
 ----------------
 
 - Python 3 support (LP#1093098).  Patch by Steven Myint (git@stevenmyint.com).
