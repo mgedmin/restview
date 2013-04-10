@@ -2,7 +2,7 @@
 restview
 ========
 
-|buildstatus|_
+|buildstatus|_ |coverage|_
 
 A viewer for ReStructuredText documents that renders them on the fly.
 
@@ -46,3 +46,6 @@ Usage: ``restview [options] filename-or-directory [...]``
 
 .. |buildstatus| image:: https://api.travis-ci.org/mgedmin/restview.png?branch=master
 .. _buildstatus: https://travis-ci.org/mgedmin/restview
+
+.. |coverage| image:: https://coveralls.io/repos/mgedmin/restview/badge.png?branch=master
+.. _coverage: https://coveralls.io/r/mgedmin/restview

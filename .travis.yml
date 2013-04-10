@@ -6,9 +6,11 @@ python:
     - 3.3
     - pypy
 install:
-    - pip install pygments mock --use-mirrors
+    - pip install pygments mock coverage coveralls --use-mirrors
     - pip install . --use-mirrors
 script:
-    - python setup.py test -q
+    - coverage run --source=restview setup.py test -q
+after_script:
+    - coveralls
 notifications:
     email: false
