@@ -1,10 +1,10 @@
 Changelog
 =========
 
-2.0.1 (unreleased)
+2.0.1 (2013-05-01)
 ------------------
 
-- No changes yet.
+- Always require Pygments.  Fixes https://github.com/mgedmin/restview/issues/9.
 
 
 2.0 (2013-04-04)
