@@ -14,7 +14,7 @@ or
     restviewhttp --help
 
 Needs docutils and a web browser. Will syntax-highlight code or doctest blocks
-if you have pygments installed.
+(needs pygments).
 """
 from __future__ import print_function
 
@@ -55,12 +55,8 @@ except ImportError:
 
 import docutils.core
 import docutils.writers.html4css1
-
-try:
-    import pygments
-    from pygments import lexers, formatters
-except ImportError:
-    pygments = None
+import pygments
+from pygments import lexers, formatters
 
 
 try:

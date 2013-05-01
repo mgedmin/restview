@@ -21,7 +21,7 @@ all:
 test:
 	$(PYTHON) setup.py test
 
-.PHONY: check 
+.PHONY: check
 check:
 	detox
 

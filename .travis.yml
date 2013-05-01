@@ -6,7 +6,7 @@ python:
     - 3.3
     - pypy
 install:
-    - pip install pygments mock coverage coveralls --use-mirrors
+    - pip install mock coverage coveralls --use-mirrors
     - pip install . --use-mirrors
 script:
     - coverage run --source=src/restview setup.py test -q
