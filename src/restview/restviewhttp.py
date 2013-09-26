@@ -121,7 +121,14 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def handle_polling(self, path, old_mtime):
         # TODO: use inotify if available
         while True:
-            mtime = int(os.stat(path).st_mtime)
+            try:
+                mtime = int(os.stat(path).st_mtime)
+            except OSError:
+                # Sometimes when you save a file in a text editor it stops
+                # existing for a brief moment.
+                # See https://github.com/mgedmin/restview/issues/11
+                time.sleep(0.1)
+                continue
             # we lose precision by using int(), but I'm nervous of
             # round-tripping floating point numbers through HTML and
             # comparing them for equality
