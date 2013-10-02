@@ -191,6 +191,19 @@ class TestMyRequestHandler(unittest.TestCase):
         self.assertEqual(handler.log,
              ['connection reset by peer (client closed "/polling?pathname=__init__.py&mtime=123455" before acknowledgement)'])
 
+    def test_handle_polling_handles_disappearing_files(self):
+        handler = MyRequestHandlerForTests()
+        filename = os.path.join(os.path.dirname(__file__), '__init__.py')
+        with patch('time.sleep'):
+            stat = {filename: [lambda: Mock(st_mtime=123455),
+                               self._raise_oserror,
+                               lambda: Mock(st_mtime=123456)]}
+            with patch('os.stat', lambda fn: stat[fn].pop(0)()):
+                handler.handle_polling(filename, 123455)
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Cache-Control'],
+                         "no-cache, no-store, max-age=0")
+
     def test_translate_path_when_root_is_a_file(self):
         handler = MyRequestHandlerForTests()
         handler.server.renderer.root = '/root/file.txt'
