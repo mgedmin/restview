@@ -2,9 +2,11 @@
 import os
 from setuptools import setup
 
+
 def read(filename):
     with open(os.path.join(os.path.dirname(__file__), filename)) as f:
         return f.read()
+
 
 def get_version(filename='src/restview/restviewhttp.py'):
     for line in read(filename).splitlines():
@@ -13,6 +15,7 @@ def get_version(filename='src/restview/restviewhttp.py'):
             exec(line, d)
             return d['__version__']
     raise AssertionError("couldn't find __version__ in %s" % filename)
+
 
 version = get_version()
 
@@ -49,6 +52,7 @@ setup(
 
     packages=['restview'],
     package_dir={'': 'src'},
+    package_data={'restview': ['*.css', '*.ico']},
     include_package_data=True,
     install_requires=['docutils', 'pygments'],
     extras_require={'syntax': []},
