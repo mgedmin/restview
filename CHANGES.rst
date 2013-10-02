@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.0.2 (unreleased)
+2.0.2 (2013-10-02)
 ------------------
 
 - Suppress errors when file disappears while restview is polling for changes.
