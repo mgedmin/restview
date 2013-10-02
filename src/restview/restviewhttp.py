@@ -107,6 +107,9 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 pathname = self.translate_path(pathname)
             old_mtime = int(query['mtime'][0])
             return self.handle_polling(pathname, old_mtime)
+        elif self.path == '/favicon.ico':
+            return self.handle_image(self.server.renderer.favicon_path,
+                                     'image/x-icon')
         elif self.path.endswith('.gif'):
             return self.handle_image(self.translate_path(), 'image/gif')
         elif self.path.endswith('.png'):
@@ -333,12 +336,15 @@ class RestViewer(object):
 
     local_address = ('localhost', 0)
 
-    # only set one of those
+    # only set one of these two:
     css_url = None
     css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                             'default.css')
 
-    strict = None
+    favicon_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                'favicon.ico')
+
+    strict = False
 
     def __init__(self, root, command=None):
         self.root = root

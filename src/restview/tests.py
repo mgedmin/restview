@@ -143,10 +143,12 @@ class TestMyRequestHandler(unittest.TestCase):
         for filename, ctype in [('a.png', 'image/png'),
                                 ('a.gif', 'image/gif'),
                                 ('a.jpg', 'image/jpeg'),
-                                ('a.jpeg', 'image/jpeg')]:
+                                ('a.jpeg', 'image/jpeg'),
+                                ('favicon.ico', 'image/x-icon')]:
             handler = MyRequestHandlerForTests()
             handler.path = '/' + filename
             handler.server.renderer.root = '/root/a.txt'
+            handler.server.renderer.favicon_path = '/root/favicon.ico'
             handler.handle_image = lambda fn, ct: '%s (%s)' % (fn, ct)
             body = handler.do_GET_or_HEAD()
             self.assertEqual(body, '/root/%s (%s)' % (filename, ctype))

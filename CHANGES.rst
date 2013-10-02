@@ -7,6 +7,8 @@ Changelog
 - Suppress errors when file disappears while restview is polling for changes.
   Fixes https://github.com/mgedmin/restview/issues/11.
 
+- Added a favicon.  Fixes https://github.com/mgedmin/restview/issues/8.
+
 
 2.0.1 (2013-05-01)
 ------------------
