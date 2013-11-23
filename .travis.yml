@@ -6,8 +6,8 @@ python:
     - 3.3
     - pypy
 install:
-    - pip install mock coverage coveralls --use-mirrors
-    - pip install . --use-mirrors
+    - pip install mock coverage coveralls
+    - pip install .
 script:
     - coverage run --source=src/restview setup.py test -q
 after_script:
