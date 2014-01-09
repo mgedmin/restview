@@ -385,6 +385,7 @@ class RestViewer(object):
         else:
             settings_overrides = {}
         settings_overrides['syntax_highlight'] = 'short'
+        settings_overrides['doctitle_xform'] = False
         if self.strict:
             settings_overrides['halt_level'] = 1
 
