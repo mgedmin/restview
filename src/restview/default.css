@@ -12,6 +12,10 @@ body {
     max-width: 50em;
 }
 
+h1.title {
+    font-size: 2.4em;
+}
+
 p {
     text-align: justify;
 }

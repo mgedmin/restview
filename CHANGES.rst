@@ -4,6 +4,8 @@ Changelog
 2.0.3 (unreleased)
 ------------------
 
+- Distinguish document title from section titles with a larger font.
+  Fixes https://github.com/mgedmin/restview/issues/12.
 
 
 2.0.2 (2013-10-02)
