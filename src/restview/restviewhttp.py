@@ -215,7 +215,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return files
 
     def handle_dir(self, dirname):
-        files = [(fn, fn) for fn in self.collect_files(dirname)]
+        files = [(fn.replace(os.path.sep, '/'), fn) for fn in self.collect_files(dirname)]
         html = self.render_dir_listing("RST files in %s" % os.path.abspath(dirname), files)
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
