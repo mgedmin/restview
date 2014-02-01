@@ -58,20 +58,30 @@ class TestMyRequestHandler(unittest.TestCase):
     def _raise_socket_error(self, *args):
         raise socket.error("connection reset by peer")
 
+    def setUp(self):
+        self.root = os.path.normpath('/root')
+        self.root2 = os.path.normpath('/root2')
+
+    def filepath(self, *names):
+        return os.path.join(self.root, *names)
+
+    def filepath2(self, *names):
+        return os.path.join(self.root2, *names)
+
     def test_do_GET(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/a.txt'
-        handler.server.renderer.root = '/root/file.txt'
+        handler.server.renderer.root = self.filepath('file.txt')
         handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
         handler.wfile = StringIO()
         handler.do_GET()
         self.assertEqual(handler.wfile.getvalue(),
-                         'HTML for /root/a.txt')
+                         'HTML for %s' % self.filepath('a.txt'))
 
     def test_do_HEAD(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/a.txt'
-        handler.server.renderer.root = '/root/file.txt'
+        handler.server.renderer.root = self.filepath('file.txt')
         handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
         handler.wfile = StringIO()
         handler.do_HEAD()
@@ -80,31 +90,31 @@ class TestMyRequestHandler(unittest.TestCase):
     def test_do_GET_or_HEAD_root_when_file(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/'
-        handler.server.renderer.root = '/root/file.txt'
+        handler.server.renderer.root = self.filepath('file.txt')
         handler.server.renderer.command = None
         handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
         with patch('os.path.isdir', lambda dir: False):
             body = handler.do_GET_or_HEAD()
-        self.assertEqual(body, 'HTML for /root/file.txt')
+        self.assertEqual(body, 'HTML for %s' % self.filepath('file.txt'))
 
     def test_do_GET_or_HEAD_root_when_dir(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/'
-        handler.server.renderer.root = '/root/'
+        handler.server.renderer.root = self.root
         handler.server.renderer.command = None
         handler.handle_dir = lambda fn: 'Files in %s' % fn
         with patch('os.path.isdir', lambda dir: True):
             body = handler.do_GET_or_HEAD()
-        self.assertEqual(body, 'Files in /root/')
+        self.assertEqual(body, 'Files in %s' % self.root)
 
     def test_do_GET_or_HEAD_root_when_list(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/'
-        handler.server.renderer.root = ['/root/', '/root2/']
+        handler.server.renderer.root = [self.root, self.root2]
         handler.server.renderer.command = None
         handler.handle_list = lambda roots: 'Files in %s' % ", ".join(roots)
         body = handler.do_GET_or_HEAD()
-        self.assertEqual(body, 'Files in /root/, /root2/')
+        self.assertEqual(body, 'Files in %s, %s' % (self.root, self.root2))
 
     def test_do_GET_or_HEAD_root_when_command(self):
         handler = MyRequestHandlerForTests()
@@ -118,23 +128,25 @@ class TestMyRequestHandler(unittest.TestCase):
     def test_do_GET_or_HEAD_polling(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/polling?pathname=a.txt&mtime=12345'
-        handler.server.renderer.root = '/root/'
+        handler.server.renderer.root = self.root
         handler.handle_polling = lambda fn, mt: 'Got update for %s since %s' % (fn, mt)
         body = handler.do_GET_or_HEAD()
-        self.assertEqual(body, 'Got update for /root/a.txt since 12345')
+        expected_fn = self.filepath('a.txt')
+        self.assertEqual(body, 'Got update for %s since 12345' % expected_fn)
 
     def test_do_GET_or_HEAD_polling_of_root(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/polling?pathname=/&mtime=12345'
-        handler.server.renderer.root = '/root/a.txt'
+        handler.server.renderer.root = self.filepath('a.txt')
         handler.handle_polling = lambda fn, mt: 'Got update for %s since %s' % (fn, mt)
         body = handler.do_GET_or_HEAD()
-        self.assertEqual(body, 'Got update for /root/a.txt since 12345')
+        expected_fn = self.filepath('a.txt')
+        self.assertEqual(body, 'Got update for %s since 12345' % expected_fn)
 
     def test_do_GET_or_HEAD_prevent_sandbox_climbing_attacks(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/polling?pathname=../../../etc/passwd&mtime=12345'
-        handler.server.renderer.root = '/root/a.txt'
+        handler.server.renderer.root = self.filepath('a.txt')
         handler.do_GET_or_HEAD()
         self.assertEqual(handler.status, 400)
         self.assertEqual(handler.error_body, "Bad request")
@@ -147,25 +159,25 @@ class TestMyRequestHandler(unittest.TestCase):
                                 ('favicon.ico', 'image/x-icon')]:
             handler = MyRequestHandlerForTests()
             handler.path = '/' + filename
-            handler.server.renderer.root = '/root/a.txt'
-            handler.server.renderer.favicon_path = '/root/favicon.ico'
+            handler.server.renderer.root = self.filepath('a.txt')
+            handler.server.renderer.favicon_path = self.filepath('favicon.ico')
             handler.handle_image = lambda fn, ct: '%s (%s)' % (fn, ct)
             body = handler.do_GET_or_HEAD()
-            self.assertEqual(body, '/root/%s (%s)' % (filename, ctype))
+            self.assertEqual(body, '%s (%s)' % (self.filepath(filename), ctype))
 
     def test_do_GET_or_HEAD_rst_files(self):
         for filename in ['a.txt', 'a.rst']:
             handler = MyRequestHandlerForTests()
             handler.path = '/' + filename
-            handler.server.renderer.root = '/root/file.txt'
+            handler.server.renderer.root = self.filepath('file.txt')
             handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
             body = handler.do_GET_or_HEAD()
-            self.assertEqual(body, 'HTML for /root/%s' % filename)
+            self.assertEqual(body, 'HTML for %s' % self.filepath(filename))
 
     def test_do_GET_or_HEAD_other_files(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/a.py'
-        handler.server.renderer.root = '/root/file.txt'
+        handler.server.renderer.root = self.filepath('file.txt')
         handler.do_GET_or_HEAD()
         self.assertEqual(handler.status, 501)
         self.assertEqual(handler.error_body, "File type not supported: /a.py")
@@ -208,30 +220,30 @@ class TestMyRequestHandler(unittest.TestCase):
 
     def test_translate_path_when_root_is_a_file(self):
         handler = MyRequestHandlerForTests()
-        handler.server.renderer.root = '/root/file.txt'
+        handler.server.renderer.root = self.filepath('file.txt')
         handler.path = '/a.txt'
         with patch('os.path.isdir', lambda dir: False):
-            self.assertEqual(handler.translate_path(), '/root/a.txt')
+            self.assertEqual(handler.translate_path(), self.filepath('a.txt'))
             self.assertEqual(handler.translate_path('/file.png'),
-                             '/root/file.png')
+                             self.filepath('file.png'))
 
     def test_translate_path_when_root_is_a_directory(self):
         handler = MyRequestHandlerForTests()
-        handler.server.renderer.root = '/root'
+        handler.server.renderer.root = self.root
         handler.path = '/a.txt'
         with patch('os.path.isdir', lambda dir: True):
-            self.assertEqual(handler.translate_path(), '/root/a.txt')
+            self.assertEqual(handler.translate_path(), self.filepath('a.txt'))
             self.assertEqual(handler.translate_path('/file.txt'),
-                             '/root/file.txt')
+                             self.filepath('file.txt'))
 
     def test_translate_path_when_root_is_a_sequence(self):
         handler = MyRequestHandlerForTests()
-        handler.server.renderer.root = ['/root', '/root2/file.txt']
+        handler.server.renderer.root = [self.root, self.root2]
         handler.path = '/0/a.txt'
         with patch('os.path.isdir', lambda dir: '.' not in dir):
-            self.assertEqual(handler.translate_path(), '/root/a.txt')
+            self.assertEqual(handler.translate_path(), self.filepath('a.txt'))
             self.assertEqual(handler.translate_path('/1/b.txt'),
-                             '/root2/b.txt')
+                             self.filepath2('b.txt'))
 
     def test_handle_image(self):
         handler = MyRequestHandlerForTests()
@@ -318,7 +330,8 @@ class TestMyRequestHandler(unittest.TestCase):
         handler = MyRequestHandlerForTests()
         with patch('os.walk', self._os_walk):
             files = handler.collect_files('/path/to/dir')
-        self.assertEqual(files, ['a.txt', 'subdir/b.txt', 'z.rst'])
+        self.assertEqual(files,
+                         ['a.txt', os.path.join('subdir', 'b.txt'), 'z.rst'])
 
     def test_handle_dir(self):
         handler = MyRequestHandlerForTests()
