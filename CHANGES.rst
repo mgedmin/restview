@@ -7,6 +7,9 @@ Changelog
 - Distinguish document title from section titles with a larger font.
   Fixes https://github.com/mgedmin/restview/issues/12.
 
+- Minor tweaks and fixes to make restview work better on Windows (e.g. all
+  tests now pass).
+
 
 2.0.2 (2013-10-02)
 ------------------
