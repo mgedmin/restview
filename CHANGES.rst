@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.0.3 (unreleased)
+2.0.3 (2014-02-01)
 ------------------
 
 - Distinguish document title from section titles with a larger font.
