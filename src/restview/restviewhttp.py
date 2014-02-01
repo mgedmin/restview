@@ -200,8 +200,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         return html
 
     def collect_files(self, dirname):
-        if not dirname.endswith('/'):
-            dirname += '/'
+        if not dirname.endswith(os.path.sep):
+            dirname += os.path.sep
         files = []
         for dirpath, dirnames, filenames in os.walk(dirname):
             dirnames[:] = [dn for dn in dirnames
@@ -229,11 +229,11 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         files = []
         for idx, fn in enumerate(list_of_files_or_dirs):
             if os.path.isdir(fn):
-                files.extend([(os.path.join(str(idx), f),
+                files.extend([('%s/%s' % (idx, f.replace(os.path.sep, '/')),
                                os.path.join(fn, f))
                               for f in self.collect_files(fn)])
             else:
-                files.append((os.path.join(str(idx), os.path.basename(fn)),
+                files.append(('%s/%s' % (idx, os.path.basename(fn)),
                               fn))
         html = self.render_dir_listing("RST files", files)
         if isinstance(html, unicode):

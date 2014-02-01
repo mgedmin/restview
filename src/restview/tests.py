@@ -130,7 +130,8 @@ class TestMyRequestHandler(unittest.TestCase):
         handler.path = '/polling?pathname=a.txt&mtime=12345'
         handler.server.renderer.root = self.root
         handler.handle_polling = lambda fn, mt: 'Got update for %s since %s' % (fn, mt)
-        body = handler.do_GET_or_HEAD()
+        with patch('os.path.isdir', lambda dir: dir == self.root):
+            body = handler.do_GET_or_HEAD()
         expected_fn = self.filepath('a.txt')
         self.assertEqual(body, 'Got update for %s since 12345' % expected_fn)
 
@@ -346,20 +347,22 @@ class TestMyRequestHandler(unittest.TestCase):
                          "text/html; charset=UTF-8")
         self.assertEqual(handler.headers['Content-Length'],
                          str(len(body)))
+        where = os.path.abspath('/path/to/dir').encode()
         self.assertEqual(body,
-                         b"<title>RST files in /path/to/dir</title>\n"
+                         b"<title>RST files in " + where + b"</title>\n"
                          b"a.txt - a.txt\n"
                          b"b/c.txt - b/c.txt")
 
     def test_handle_list(self):
         handler = MyRequestHandlerForTests()
-        handler.collect_files = lambda dir: ['a.txt', 'b/c.txt']
+        handler.collect_files = lambda dir: ['a.txt', os.path.join('b', 'c.txt')]
         handler.render_dir_listing = lambda title, files: \
                 unicode("<title>%s</title>\n%s" % (
                     title,
                     '\n'.join('%s - %s' % (path, fn) for path, fn in files)))
         with patch('os.path.isdir', lambda fn: fn == 'subdir'):
-            body = handler.handle_list(['/path/to/file.txt', 'subdir'])
+            body = handler.handle_list([os.path.normpath('/path/to/file.txt'),
+                                        'subdir'])
         self.assertEqual(handler.status, 200)
         self.assertEqual(handler.headers['Content-Type'],
                          "text/html; charset=UTF-8")
@@ -367,9 +370,10 @@ class TestMyRequestHandler(unittest.TestCase):
                          str(len(body)))
         self.assertEqual(body,
                          b"<title>RST files</title>\n"
-                         b"0/file.txt - /path/to/file.txt\n"
-                         b"1/a.txt - subdir/a.txt\n"
-                         b"1/b/c.txt - subdir/b/c.txt")
+                         b"0/file.txt - #path#to#file.txt\n"
+                         b"1/a.txt - subdir#a.txt\n"
+                         b"1/b/c.txt - subdir#b#c.txt"
+                            .replace(b"#", os.path.sep.encode()))
 
 
 def doctest_MyRequestHandler_render_dir_listing():
@@ -760,7 +764,7 @@ def test_suite():
         unittest.makeSuite(TestRestViewer),
         unittest.makeSuite(TestGlobals),
         unittest.makeSuite(TestMain),
-        doctest.DocTestSuite(optionflags=doctest.ELLIPSIS|doctest.REPORT_NDIFF),
+        doctest.DocTestSuite(optionflags=doctest.ELLIPSIS | doctest.REPORT_NDIFF),
         doctest.DocTestSuite('restview.restviewhttp'),
     ])
 
