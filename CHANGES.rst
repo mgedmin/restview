@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.0.4 (unreleased)
+2.0.4 (2014-04-28)
 ------------------
 
 - Show a clear error when external command fails.
