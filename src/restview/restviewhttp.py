@@ -3,15 +3,15 @@
 HTTP-based ReStructuredText viewer.
 
 Usage:
-    restviewhttp [options] filename.rst
+    restview [options] filename.rst [...]
 or
-    restviewhttp [options] directory
+    restview [options] directory [...]
 or
-    restviewhttp [options] -e "command"
+    restview [options] -e "command"
 or
-    restviewhttp [options] --long-description
+    restview [options] --long-description
 or
-    restviewhttp --help
+    restview --help
 
 Needs docutils and a web browser. Will syntax-highlight code or doctest blocks
 (needs pygments).
