@@ -4,6 +4,9 @@ Changelog
 2.0.4 (unreleased)
 ------------------
 
+- Show a clear error when external command fails.
+  Fixes https://github.com/mgedmin/restview/issues/14.
+
 
 2.0.3 (2014-02-01)
 ------------------
