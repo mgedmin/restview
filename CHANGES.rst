@@ -7,6 +7,9 @@ Changelog
 - Show a clear error when external command fails.
   Fixes https://github.com/mgedmin/restview/issues/14.
 
+- Stop mangling document titles.
+  Fixes https://github.com/mgedmin/restview/issues/15.
+
 
 2.0.3 (2014-02-01)
 ------------------

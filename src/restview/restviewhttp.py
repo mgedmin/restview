@@ -416,21 +416,18 @@ class RestViewer(object):
             docutils.core.publish_string(rest_input, writer=writer,
                                          settings_overrides=settings_overrides)
         except Exception as e:
-            return self.render_exception(e.__class__.__name__, str(e),
-                                         rest_input)
-        return self.get_markup(writer.output, mtime=mtime)
+            html = self.render_exception(e.__class__.__name__, str(e), rest_input)
+        else:
+            html = writer.output
+        return self.inject_ajax(html, mtime=mtime)
 
     def render_exception(self, title, error, source):
-        html = (ERROR_TEMPLATE.replace('$title', escape(title))
+        return (ERROR_TEMPLATE.replace('$title', escape(title))
                               .replace('$error', escape(error))
                               .replace('$source', escape(source)))
-        return self.get_markup(html)
 
-    def get_markup(self, markup, mtime=None):
-        if self.command is not None:
-            return markup.replace('</title>',
-                                  ' -e "' + escape(self.command) + '"</title>')
-        elif mtime is not None:
+    def inject_ajax(self, markup, mtime=None):
+        if mtime is not None:
             return markup.replace('</body>', (AJAX_STR % mtime) + '</body>')
         else:
             return markup

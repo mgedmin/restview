@@ -581,11 +581,11 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
     """
 
 
-def doctest_RestViewer_get_markup():
-    """Test for RestViewer.get_markup
+def doctest_RestViewer_inject_ajax():
+    """Test for RestViewer.inject_ajax
 
         >>> viewer = RestViewer('.')
-        >>> print(viewer.get_markup('''
+        >>> print(viewer.inject_ajax('''
         ... <html>
         ... <head>
         ... <title>Title</title>
@@ -607,11 +607,11 @@ def doctest_RestViewer_get_markup():
     """
 
 
-def doctest_RestViewer_get_markup_adds_ajax():
-    """Test for RestViewer.get_markup
+def doctest_RestViewer_inject_ajax_adds_ajax():
+    """Test for RestViewer.inject_ajax
 
         >>> viewer = RestViewer('.')
-        >>> print(viewer.get_markup('''
+        >>> print(viewer.inject_ajax('''
         ... <html>
         ... <head>
         ... <title>Title</title>
@@ -650,32 +650,6 @@ def doctest_RestViewer_get_markup_adds_ajax():
             xmlHttp.abort();
         }
         </script>
-        </body>
-        </html>
-
-    """
-
-
-def doctest_RestViewer_get_markup_command_output():
-    """Test for RestViewer.get_markup
-
-        >>> viewer = RestViewer('.', command='python setup.py --long-description')
-        >>> print(viewer.get_markup('''
-        ... <html>
-        ... <head>
-        ... <title>restview</title>
-        ... </head>
-        ... <body>
-        ... <p>Some body text</p>
-        ... </body>
-        ... </html>
-        ... ''').strip())
-        <html>
-        <head>
-        <title>restview -e "python setup.py --long-description"</title>
-        </head>
-        <body>
-        <p>Some body text</p>
         </body>
         </html>
 
