@@ -21,6 +21,21 @@ except NameError:
     unicode = str
 
 
+class PopenStub(object):
+
+    def __init__(self, stdout='', stderr='', retcode=0):
+        self._stdout = stdout
+        self._stderr = stderr
+        self.returncode = retcode
+
+    def __call__(self, *args, **kw):
+        return self
+
+    def communicate(self, stdin=''):
+        self._stdin = stdin
+        return (self._stdout, self._stderr)
+
+
 class MyRequestHandlerForTests(MyRequestHandler):
     def __init__(self):
         self._headers = {}
@@ -28,6 +43,8 @@ class MyRequestHandlerForTests(MyRequestHandler):
         self.server = Mock()
         self.server.renderer.rest_to_html = lambda data, mtime=None: \
             unicode('HTML for %s with AJAX poller for %s' % (data, mtime))
+        self.server.renderer.render_exception = lambda title, error, source: \
+            unicode('HTML for error %s: %s: %s' % (title, error, source))
     def send_response(self, status):
         self.status = status
     def send_header(self, header, value):
@@ -52,7 +69,7 @@ class TestMyRequestHandler(unittest.TestCase):
         for subdir in dirnames:
             yield os.path.join(dirpath, subdir), [], ['b.txt', 'c.py']
 
-    def _raise_oserror(self, *args):
+    def _raise_oserror(self, *args, **kw):
         raise OSError(errno.ENOENT, "no such file or directory")
 
     def _raise_socket_error(self, *args):
@@ -292,7 +309,7 @@ class TestMyRequestHandler(unittest.TestCase):
 
     def test_handle_command(self):
         handler = MyRequestHandlerForTests()
-        with patch('os.popen', lambda cmd: StringIO('data from %s' % cmd)):
+        with patch('subprocess.Popen', PopenStub('data from cat README.rst')):
             body = handler.handle_command('cat README.rst')
         self.assertEqual(handler.status, 200)
         self.assertEqual(handler.headers['Content-Type'],
@@ -305,9 +322,23 @@ class TestMyRequestHandler(unittest.TestCase):
                          b'HTML for data from cat README.rst'
                          b' with AJAX poller for None')
 
+    def test_handle_command_returns_error(self):
+        handler = MyRequestHandlerForTests()
+        with patch('subprocess.Popen', PopenStub('', 'cat: README.rst: no such file', 1)):
+            body = handler.handle_command('cat README.rst')
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Content-Type'],
+                         "text/html; charset=UTF-8")
+        self.assertEqual(handler.headers['Content-Length'],
+                         str(len(body)))
+        self.assertEqual(handler.headers['Cache-Control'],
+                         "no-cache, no-store, max-age=0")
+        self.assertTrue(b'cat: README.rst: no such file' in body,
+                        body)
+
     def test_handle_command_error(self):
         handler = MyRequestHandlerForTests()
-        with patch('os.popen', self._raise_oserror):
+        with patch('subprocess.Popen', self._raise_oserror):
             handler.handle_command('cat README.rst')
         self.assertEqual(handler.status, 500)
         self.assertEqual(handler.error_body,

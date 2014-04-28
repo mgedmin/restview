@@ -25,8 +25,8 @@ import time
 import socket
 import optparse
 import threading
+import subprocess
 import webbrowser
-from contextlib import closing
 
 try:
     import BaseHTTPServer
@@ -182,14 +182,35 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def handle_command(self, command):
         try:
-            with closing(os.popen(command)) as f:
-                return self.handle_rest_data(f.read())
+            p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+            stdout, stderr = p.communicate()
+            if p.returncode != 0:
+                self.log_error("'%s' terminated with %s", command, p.returncode)
+            if stderr or not stdout:
+                return self.handle_error(command, p.returncode, stderr)
+            else:
+                return self.handle_rest_data(stdout)
         except OSError as e:
             self.log_error("%s", e)
             self.send_error(500, "Command execution failed")
 
     def handle_rest_data(self, data, mtime=None):
         html = self.server.renderer.rest_to_html(data, mtime=mtime)
+        if isinstance(html, unicode):
+            html = html.encode('UTF-8')
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=UTF-8")
+        self.send_header("Content-Length", str(len(html)))
+        self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
+        self.end_headers()
+        return html
+
+    def handle_error(self, command, retcode, stderr):
+        html = self.server.renderer.render_exception(
+            title=command,
+            error='Returned error code %s' % retcode,
+            source=stderr or '(no output)')
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
