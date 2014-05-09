@@ -17,7 +17,7 @@ all:
 	@echo "Nothing to do"
 
 
-.PHONY: check
+.PHONY: test
 test:
 	$(PYTHON) setup.py test
 
