@@ -173,7 +173,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def handle_rest_file(self, filename):
         try:
-            with open(filename) as f:
+            with open(filename, 'rb') as f:
                 mtime = os.fstat(f.fileno()).st_mtime
                 return self.handle_rest_data(f.read(), mtime=mtime)
         except IOError as e:

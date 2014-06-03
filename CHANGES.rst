@@ -4,6 +4,10 @@ Changelog
 2.0.5 (unreleased)
 ------------------
 
+- Avoid Unicode errors when the ReStructuredText file is in an encoding that
+  doesn't match the locale.
+  Fixes https://github.com/mgedmin/restview/issues/16.
+
 
 2.0.4 (2014-04-28)
 ------------------
