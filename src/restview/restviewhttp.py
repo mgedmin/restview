@@ -239,7 +239,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         files = [(fn.replace(os.path.sep, '/'), fn) for fn in self.collect_files(dirname)]
         html = self.render_dir_listing("RST files in %s" % os.path.abspath(dirname), files)
         if isinstance(html, unicode):
-            html = html.encode('UTF-8')
+            html = html.encode('UTF-8', 'replace')
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=UTF-8")
         self.send_header("Content-Length", str(len(html)))
@@ -258,7 +258,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                               fn))
         html = self.render_dir_listing("RST files", files)
         if isinstance(html, unicode):
-            html = html.encode('UTF-8')
+            html = html.encode('UTF-8', 'replace')
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=UTF-8")
         self.send_header("Content-Length", str(len(html)))
