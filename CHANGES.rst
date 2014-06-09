@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.0.5 (unreleased)
+2.0.5 (2014-06-09)
 ------------------
 
 - Avoid Unicode errors on Python 3 when the ReStructuredText file is in an
