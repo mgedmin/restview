@@ -43,6 +43,20 @@ Usage: ``restview [options] filename-or-directory [...]``
                       use the specified stylesheet
 --strict              halt at the slightest problem
 
+Installation
+============
+
+On .deb based systems (e.g. Ubuntu) ::
+
+  sudo apt-get install python-pip
+  sudo pip install restview
+
+On .rpm based systems (e.g. Fedora) ::
+
+  su
+  yum install python-pip
+  pip install restview
+
 
 .. |buildstatus| image:: https://api.travis-ci.org/mgedmin/restview.png?branch=master
 .. _buildstatus: https://travis-ci.org/mgedmin/restview
