@@ -1,8 +1,16 @@
 Changelog
 =========
 
-2.0.6 (unreleased)
+2.1.0 (2014-09-02)
 ------------------
+
+- ``--pypi-strict`` mode to catch additional problems that break rendering
+  on the Python Packaging Index.  ``--long-description`` enables this
+  automatically.
+  Fixes https://github.com/mgedmin/restview/issues/18.
+
+- Added installation section to the README.
+  Fixes https://github.com/mgedmin/restview/issues/19.
 
 
 2.0.5 (2014-06-09)
