@@ -58,6 +58,8 @@ import docutils.writers.html4css1
 import pygments
 from pygments import lexers, formatters
 
+from restview.pypi_support import trim_docstring, checkLinkSchemes
+
 
 try:
     unicode
@@ -366,6 +368,7 @@ class RestViewer(object):
                                 'favicon.ico')
 
     strict = False
+    pypi_strict = False
 
     def __init__(self, root, command=None):
         self.root = root
@@ -406,6 +409,11 @@ class RestViewer(object):
         else:
             settings_overrides = {}
         settings_overrides['syntax_highlight'] = 'short'
+        if self.pypi_strict:
+            settings_overrides['raw_enabled'] = 0
+            settings_overrides['file_insertion_enabled'] = 0
+            settings_overrides['halt_level'] = 2
+            rest_input = trim_docstring(rest_input)
         if self.strict:
             settings_overrides['halt_level'] = 1
 
@@ -413,6 +421,10 @@ class RestViewer(object):
             settings_overrides.update(settings)
 
         try:
+            if self.pypi_strict:
+                document = docutils.core.publish_doctree(source=rest_input,
+                    settings_overrides=settings_overrides)
+                checkLinkSchemes(document)
             docutils.core.publish_string(rest_input, writer=writer,
                                          settings_overrides=settings_overrides)
         except Exception as e:
@@ -586,16 +598,22 @@ def main():
                       help='run a command to produce ReStructuredText',
                       default=None)
     parser.add_option('--long-description',
-                      help='run "python setup.py --long-description" to produce ReStructuredText',
-                      action='store_const', dest='execute',
-                      const='python setup.py --long-description')
+                      help='run "python setup.py --long-description" to produce'
+                           ' ReStructuredText; also enables --pypi-strict',
+                      action='store_true')
     parser.add_option('--css', metavar='URL-or-FILENAME',
                       help='use the specified stylesheet',
                       action='store', dest='css_path', default=None)
     parser.add_option('--strict',
                       help='halt at the slightest problem',
                       action='store_true', default=False)
+    parser.add_option('--pypi-strict',
+                      help='enable additional restrictions that PyPI performs',
+                      action='store_true', default=False)
     opts, args = parser.parse_args(sys.argv[1:])
+    if opts.long_description:
+        opts.execute = 'python setup.py --long-description'
+        opts.pypi_strict = True
     if not args and not opts.execute:
         parser.error("at least one argument expected")
     if args and opts.execute:
@@ -618,6 +636,7 @@ def main():
             server.css_url = None
 
     server.strict = opts.strict
+    server.pypi_strict = opts.pypi_strict
 
     if opts.listen:
         try:

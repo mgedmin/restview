@@ -581,6 +581,60 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
     """
 
 
+def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
+    """Test for RestViewer.rest_to_html in --pypi-strict mode
+
+        >>> stderr_patcher = patch('sys.stderr', StringIO())
+        >>> stderr = stderr_patcher.start()
+
+        >>> viewer = RestViewer('.')
+        >>> viewer.css_path = viewer.css_url = None
+        >>> viewer.pypi_strict = True
+        >>> print(viewer.rest_to_html('''
+        ... Hello
+        ... -----
+        ...
+        ... .. image:: https://example.com/buildstatus.png
+        ...
+        ... Here is a `relative link <example.com>`__.
+        ...
+        ... ''').strip())
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <title>TransformError</title>
+        <style type="text/css">
+        pre.error {
+            border-left: 3px double red;
+            margin-left: 19px;
+            padding-left: 19px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            color: red;
+        }
+        </style>
+        </head>
+        <body>
+        <h1>TransformError</h1>
+        <pre class="error">
+        link scheme not allowed: example.com
+        </pre>
+        <pre>
+        Hello
+        -----
+        <BLANKLINE>
+        .. image:: https://example.com/buildstatus.png
+        <BLANKLINE>
+        Here is a `relative link &lt;example.com&gt;`__.
+        </pre>
+        </body>
+        </html>
+
+        >>> stderr_patcher.stop()
+
+    """
+
+
 def doctest_RestViewer_inject_ajax():
     """Test for RestViewer.inject_ajax
 
@@ -680,6 +734,10 @@ class TestGlobals(unittest.TestCase):
                                            args=('http://example.com',))
             Thread.return_value.setDaemon.assert_called_once_with(True)
             Thread.return_value.start.assert_called_once()
+
+    def test_trim_docstring(self):
+        from restview.pypi_support import trim_docstring
+        self.assertEqual(trim_docstring(""), "")
 
 
 class TestMain(unittest.TestCase):

@@ -18,11 +18,8 @@ look for files that end in .txt or .rst and present you with a list.
 Finally, you can make sure your Python package has valid ReStructuredText
 in the long_description field by using ::
 
-  restview -e 'python setup.py --long-description' --strict
+  restview --long-description
 
-This is so useful restview has a shortcut for it ::
-
-  restview --long-description --strict
 
 Synopsis
 ========
@@ -38,10 +35,11 @@ Usage: ``restview [options] filename-or-directory [...]``
 -e COMMAND, --execute=COMMAND
                       run a command to produce ReStructuredText
 --long-description    run "python setup.py --long-description" to produce
-                      ReStructuredText
+                      ReStructuredText; also enables --pypi-strict
 --css=URL-or-FILENAME
                       use the specified stylesheet
 --strict              halt at the slightest problem
+--pypi-strict         enable additional restrictions that PyPI performs
 
 Installation
 ============
