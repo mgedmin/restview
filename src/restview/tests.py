@@ -437,7 +437,7 @@ def doctest_RestViewer_rest_to_html():
     """Test for RestViewer.rest_to_html
 
         >>> viewer = RestViewer('.')
-        >>> print(viewer.rest_to_html('''
+        >>> print(viewer.rest_to_html(b'''
         ... example
         ... -------
         ...
@@ -509,7 +509,7 @@ def doctest_RestViewer_rest_to_html_css_url():
 
         >>> viewer = RestViewer('.')
         >>> viewer.css_url = 'http://example.com/my.css'
-        >>> print(viewer.rest_to_html('''
+        >>> print(viewer.rest_to_html(b'''
         ... Some text
         ... ''').strip())
         <?xml version="1.0" encoding="utf-8" ?>
@@ -545,7 +545,7 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
         >>> viewer = RestViewer('.')
         >>> viewer.css_path = viewer.css_url = None
         >>> viewer.strict = True
-        >>> print(viewer.rest_to_html('''
+        >>> print(viewer.rest_to_html(b'''
         ... Some text with an `error
         ... ''').strip())
         <!DOCTYPE html>
@@ -590,7 +590,7 @@ def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
         >>> viewer = RestViewer('.')
         >>> viewer.css_path = viewer.css_url = None
         >>> viewer.pypi_strict = True
-        >>> print(viewer.rest_to_html('''
+        >>> print(viewer.rest_to_html(b'''
         ... Hello
         ... -----
         ...

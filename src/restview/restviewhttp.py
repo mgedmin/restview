@@ -434,6 +434,10 @@ class RestViewer(object):
         return self.inject_ajax(html, mtime=mtime)
 
     def render_exception(self, title, error, source):
+        # NB: source is a bytestring (see issue #16 for the reason)
+        # UTF-8 is not necessarily the right thing to use here, but
+        # garbage is better than a crash, right?
+        source = source.decode('UTF-8', 'replace')
         return (ERROR_TEMPLATE.replace('$title', escape(title))
                               .replace('$error', escape(error))
                               .replace('$source', escape(source)))

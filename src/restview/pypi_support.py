@@ -70,7 +70,7 @@ def trim_docstring(text):
     while trimmed and not trimmed[0]:
         trimmed.pop(0)
     # Return a single string:
-    return '\n'.join(trimmed)
+    return b'\n'.join(trimmed)
 
 
 ALLOWED_SCHEMES = '''file ftp gopher hdl http https imap mailto mms news nntp
