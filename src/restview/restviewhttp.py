@@ -67,7 +67,7 @@ except NameError:
     unicode = str
 
 
-__version__ = "2.1.1dev"
+__version__ = "2.1.1"
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):

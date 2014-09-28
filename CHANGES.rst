@@ -1,8 +1,14 @@
 Changelog
 =========
 
-2.1.1 (unreleased)
+2.1.1 (2014-09-28)
 ------------------
+
+- Fix TypeError on Python 3 when reporting ReST errors (typically in strict
+  mode).
+  Fixes https://github.com/mgedmin/restview/issues/21.
+
+- Fix TypeError on Python 3 when using ``--pypi-strict``.
 
 
 2.1.0 (2014-09-02)
