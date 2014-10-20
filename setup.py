@@ -56,7 +56,7 @@ setup(
     package_dir={'': 'src'},
     package_data={'restview': ['*.css', '*.ico']},
     include_package_data=True,
-    install_requires=['docutils', 'pygments' + (' < 2.0' if sys.version_info[:2] == (3, 2) else '')],
+    install_requires=['docutils', 'pygments' + (' < 2.0a' if sys.version_info[:2] == (3, 2) else '')],
     extras_require={'syntax': []},
     test_suite='restview.tests.test_suite',
     tests_require=['mock'],
