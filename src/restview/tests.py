@@ -674,6 +674,7 @@ def doctest_RestViewer_inject_ajax_adds_ajax():
         ... </body>
         ... </html>
         ... ''', mtime=1364808683).strip())
+        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <html>
         <head>
         <title>Title</title>
@@ -682,26 +683,8 @@ def doctest_RestViewer_inject_ajax_adds_ajax():
         <p>Some body text</p>
         <BLANKLINE>
         <script type="text/javascript">
-        var xmlHttp = null;
-        window.onload = function () {
-            setTimeout(function () {
-                if (window.XMLHttpRequest) {
-                    xmlHttp = new XMLHttpRequest();
-                } else if (window.ActiveXObject) {
-                    xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
-                }
-                xmlHttp.onreadystatechange = function () {
-                    if (xmlHttp.readyState == 4 && xmlHttp.status == '200') {
-                        window.location.reload(true);
-                    }
-                }
-                xmlHttp.open('HEAD', '/polling?pathname=' + location.pathname + '&mtime=1364808683', true);
-                xmlHttp.send(null);
-            }, 0);
-        }
-        window.onbeforeunload = function () {
-            xmlHttp.abort();
-        }
+        var mtime = '1364808683';
+        ...
         </script>
         </body>
         </html>

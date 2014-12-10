@@ -67,7 +67,7 @@ except NameError:
     unicode = str
 
 
-__version__ = "2.1.2dev"
+__version__ = "2.2.0dev"
 
 
 # If restview is ever packaged for Debian, this'll likely be changed to
@@ -210,6 +210,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/html; charset=UTF-8")
         self.send_header("Content-Length", str(len(html)))
         self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
+        if mtime is not None:
+            self.send_header("X-Restview-Mtime", '%d' % mtime)
         self.end_headers()
         return html
 
@@ -300,25 +302,36 @@ FILE_TEMPLATE = """\
 
 AJAX_STR = """
 <script type="text/javascript">
-var xmlHttp = null;
+var mtime = '%d';
+var poll = null;
 window.onload = function () {
     setTimeout(function () {
-        if (window.XMLHttpRequest) {
-            xmlHttp = new XMLHttpRequest();
-        } else if (window.ActiveXObject) {
-            xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
-        }
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == '200') {
-                window.location.reload(true);
+        poll = new XMLHttpRequest();
+        poll.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var reload = new XMLHttpRequest();
+                reload.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        document.title = this.responseXML.title;
+                        document.body.innerHTML = this.responseXML.body.innerHTML;
+                        mtime = this.getResponseHeader('X-Restview-Mtime');
+                        if (mtime) {
+                            poll.open('HEAD', '/polling?pathname=' + location.pathname + '&mtime=' + mtime, true);
+                            poll.send();
+                        }
+                    }
+                }
+                reload.open('GET', location.pathname, true);
+                reload.responseType = 'document';
+                reload.send();
             }
         }
-        xmlHttp.open('HEAD', '/polling?pathname=' + location.pathname + '&mtime=%d', true);
-        xmlHttp.send(null);
+        poll.open('HEAD', '/polling?pathname=' + location.pathname + '&mtime=' + mtime, true);
+        poll.send(null);
     }, 0);
 }
 window.onbeforeunload = function () {
-    xmlHttp.abort();
+    poll.abort();
 }
 </script>
 """

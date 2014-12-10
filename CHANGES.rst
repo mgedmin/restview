@@ -4,6 +4,9 @@ Changelog
 2.2.0 (unreleased)
 ------------------
 
+- Reload the page using AJAX to preserve scroll position.
+  Fixes https://github.com/mgedmin/restview/issues/22.
+
 - Use the default docutils CSS instead of replacing it wholesale.
   Drop some of our styles, including:
 
@@ -235,4 +238,3 @@ Changelog
 ------------------
 
 - PyGtk+ version with GtkMozEmbed.  Not very stable.
-
