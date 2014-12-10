@@ -38,6 +38,11 @@ Changelog
 
   Fixes https://github.com/mgedmin/restview/issues/23.
 
+- New option: ``--watch``.
+
+- ``restview --long-description`` watches setup.py, README.rst and CHANGES.rst
+  for updates and reloads the description automatically.
+
 
 2.1.1 (2014-09-28)
 ------------------
