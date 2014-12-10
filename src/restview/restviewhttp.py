@@ -117,7 +117,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 pathnames = [self.translate_path(pathname)]
             if watch:
                 pathnames += watch
-            old_mtime = int(query['mtime'][0])
+            old_mtime = query['mtime'][0]
             return self.handle_polling(pathnames, old_mtime)
         elif self.path == '/favicon.ico':
             return self.handle_image(self.server.renderer.favicon_path,
@@ -154,10 +154,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 # See https://github.com/mgedmin/restview/issues/11
                 time.sleep(0.1)
                 continue
-            # we lose precision by using int(), but I'm nervous of
-            # round-tripping floating point numbers through HTML and
-            # comparing them for equality
-            if int(mtime) != int(old_mtime):
+            # Compare as strings: the JS treats our value as a cookie
+            if str(mtime) != str(old_mtime):
                 try:
                     self.send_response(200)
                     self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
@@ -229,7 +227,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(html)))
         self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
         if mtime is not None:
-            self.send_header("X-Restview-Mtime", '%d' % mtime)
+            self.send_header("X-Restview-Mtime", str(mtime))
         self.end_headers()
         return html
 
@@ -320,7 +318,7 @@ FILE_TEMPLATE = """\
 
 AJAX_STR = """
 <script type="text/javascript">
-var mtime = '%d';
+var mtime = '%s';
 var poll = null;
 window.onload = function () {
     setTimeout(function () {
