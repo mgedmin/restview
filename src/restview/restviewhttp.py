@@ -631,8 +631,7 @@ def main():
     else:
         server = RestViewer(args)
     if opts.css_path:
-        if (opts.css_path.startswith('http://') or
-            opts.css_path.startswith('https://')):
+        if opts.css_path.startswith(('http://', 'https://')):
             server.css_url = opts.css_path
             server.css_path = None
         else:
