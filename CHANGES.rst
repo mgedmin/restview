@@ -23,27 +23,40 @@ Changelog
   - prettier system error messages
   - unified alignment of code blocks, block quotes and doctests
 
-  If you want to go back to previous look, you can use ::
+  Fixes https://github.com/mgedmin/restview/issues/23.
+
+- The ``--css`` option can be provided multiple times and can refer to
+  standard stylesheets (the ones provided by docutils as well as the ones
+  provided by restview) without specifying the full path.
+
+  For example, if you want to go back to the style used by restview before
+  version 2.2.0, you can use ::
 
     restview --css oldrestview.css ...
 
   If you want your own custom style on top of the standard docutils
   styles, use ::
 
-    restview --css html4css1.css,./path/to/my.css
+    restview --css html4css1.css --css ./path/to/my.css
 
   And if you want to completely override the stylesheet, use ::
 
     restview --css ./path/to/my.css
 
-  Fixes https://github.com/mgedmin/restview/issues/23.
+- New option: ``--watch``.  Reloads pages when a given file changes.  Mostly
+  useful with ``-e``, but can also come in handy when you're developing your
+  CSS.  Can be specified multiple times, e.g. ::
 
-- New option: ``--watch``.
+    restview --css my.css -e 'cat one.rst two.rst' -w my.css -w one.rst -w two.rst
 
 - ``restview --long-description`` watches setup.py, README.rst and CHANGES.rst
   for updates and reloads the description automatically.
 
 - Error pages will also reload automatically if the source file changes.
+
+- Error pages in strict mode will mention the filename instead of ``<string>``.
+
+- File watching now pays attention to fractional seconds.
 
 
 2.1.1 (2014-09-28)
