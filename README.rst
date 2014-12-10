@@ -34,8 +34,13 @@ Usage: ``restview [options] filename-or-directory [...]``
                       specified]
 -e COMMAND, --execute=COMMAND
                       run a command to produce ReStructuredText
+-w FILENAME, --watch=FILENAME
+                      reload the page when a file changes (use with
+                      --execute); can be specified multiple times
 --long-description    run "python setup.py --long-description" to produce
-                      ReStructuredText; also enables --pypi-strict
+                      ReStructuredText; also enables --pypi-strict and watches
+                      the usual long description sources (setup.py, README.rst,
+                      CHANGES.rst)
 --css=URL-or-FILENAME
                       use the specified stylesheet; can be specified multiple
                       times [default: html4css1.css,restview.css]

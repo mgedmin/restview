@@ -41,6 +41,8 @@ class MyRequestHandlerForTests(MyRequestHandler):
         self._headers = {}
         self.log = []
         self.server = Mock()
+        self.server.renderer.command = None
+        self.server.renderer.watch = None
         self.server.renderer.rest_to_html = lambda data, mtime=None: \
             unicode('HTML for %s with AJAX poller for %s' % (data, mtime))
         self.server.renderer.render_exception = lambda title, error, source: \
@@ -138,7 +140,7 @@ class TestMyRequestHandler(unittest.TestCase):
         handler.path = '/'
         handler.server.renderer.root = None
         handler.server.renderer.command = 'cat README.rst'
-        handler.handle_command = lambda cmd: 'Output of %s' % cmd
+        handler.handle_command = lambda cmd, watch: 'Output of %s' % cmd
         body = handler.do_GET_or_HEAD()
         self.assertEqual(body, 'Output of cat README.rst')
 
@@ -146,7 +148,7 @@ class TestMyRequestHandler(unittest.TestCase):
         handler = MyRequestHandlerForTests()
         handler.path = '/polling?pathname=a.txt&mtime=12345'
         handler.server.renderer.root = self.root
-        handler.handle_polling = lambda fn, mt: 'Got update for %s since %s' % (fn, mt)
+        handler.handle_polling = lambda fns, mt: 'Got update for %s since %s' % (','.join(fns), mt)
         with patch('os.path.isdir', lambda dir: dir == self.root):
             body = handler.do_GET_or_HEAD()
         expected_fn = self.filepath('a.txt')
@@ -156,10 +158,19 @@ class TestMyRequestHandler(unittest.TestCase):
         handler = MyRequestHandlerForTests()
         handler.path = '/polling?pathname=/&mtime=12345'
         handler.server.renderer.root = self.filepath('a.txt')
-        handler.handle_polling = lambda fn, mt: 'Got update for %s since %s' % (fn, mt)
+        handler.handle_polling = lambda fns, mt: 'Got update for %s since %s' % (','.join(fns), mt)
         body = handler.do_GET_or_HEAD()
         expected_fn = self.filepath('a.txt')
         self.assertEqual(body, 'Got update for %s since 12345' % expected_fn)
+
+    def test_do_GET_or_HEAD_polling_of_watch_files(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/polling?pathname=/&mtime=12345'
+        handler.server.renderer.command = 'python setup.py --long-description'
+        handler.server.renderer.watch = ['setup.py', 'README.rst']
+        handler.handle_polling = lambda fns, mt: 'Got update for %s since %s' % (','.join(fns), mt)
+        body = handler.do_GET_or_HEAD()
+        self.assertEqual(body, 'Got update for setup.py,README.rst since 12345')
 
     def test_do_GET_or_HEAD_prevent_sandbox_climbing_attacks(self):
         handler = MyRequestHandlerForTests()
@@ -206,7 +217,7 @@ class TestMyRequestHandler(unittest.TestCase):
         with patch('time.sleep') as sleep:
             stat = {filename: [Mock(st_mtime=123455), Mock(st_mtime=123456)]}
             with patch('os.stat', lambda fn: stat[fn].pop(0)):
-                handler.handle_polling(filename, 123455)
+                handler.handle_polling([filename], 123455)
             sleep.assert_called_once_with(0.2)
         self.assertEqual(handler.status, 200)
         self.assertEqual(handler.headers['Cache-Control'],
@@ -219,7 +230,7 @@ class TestMyRequestHandler(unittest.TestCase):
         filename = os.path.join(os.path.dirname(__file__), '__init__.py')
         stat = {filename: [Mock(st_mtime=123456)]}
         with patch('os.stat', lambda fn: stat[fn].pop(0)):
-            handler.handle_polling(filename, 123455)
+            handler.handle_polling([filename], 123455)
         self.assertEqual(handler.log,
              ['connection reset by peer (client closed "/polling?pathname=__init__.py&mtime=123455" before acknowledgement)'])
 
@@ -231,7 +242,7 @@ class TestMyRequestHandler(unittest.TestCase):
                                self._raise_oserror,
                                lambda: Mock(st_mtime=123456)]}
             with patch('os.stat', lambda fn: stat[fn].pop(0)()):
-                handler.handle_polling(filename, 123455)
+                handler.handle_polling([filename], 123455)
         self.assertEqual(handler.status, 200)
         self.assertEqual(handler.headers['Cache-Control'],
                          "no-cache, no-store, max-age=0")

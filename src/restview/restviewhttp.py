@@ -7,7 +7,7 @@ Usage:
 or
     restview [options] directory [...]
 or
-    restview [options] -e "command"
+    restview [options] -e "command" [--watch filename] [...]
 or
     restview [options] --long-description
 or
@@ -97,7 +97,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         command = self.server.renderer.command
         if self.path == '/':
             if command:
-                return self.handle_command(command)
+                watch = self.server.renderer.watch
+                return self.handle_command(command, watch)
             elif isinstance(root, str):
                 if os.path.isdir(root):
                     return self.handle_dir(root)
@@ -108,12 +109,14 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         elif self.path.startswith('/polling?'):
             query = parse_qs(self.path.partition('?')[-1])
             pathname = query['pathname'][0]
-            if pathname == '/' and isinstance(root, str):
-                pathname = root
+            if pathname == '/' and self.server.renderer.command:
+                pathnames = self.server.renderer.watch
+            elif pathname == '/' and isinstance(root, str):
+                pathnames = [root]
             else:
-                pathname = self.translate_path(pathname)
+                pathnames = [self.translate_path(pathname)]
             old_mtime = int(query['mtime'][0])
-            return self.handle_polling(pathname, old_mtime)
+            return self.handle_polling(pathnames, old_mtime)
         elif self.path == '/favicon.ico':
             return self.handle_image(self.server.renderer.favicon_path,
                                      'image/x-icon')
@@ -128,12 +131,23 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             self.send_error(501, "File type not supported: %s" % self.path)
 
-    def handle_polling(self, path, old_mtime):
+    def get_latest_mtime(self, filenames):
+        latest_mtime = None
+        for path in filenames:
+            try:
+                mtime = os.stat(path).st_mtime
+            except OSError:
+                pass
+            else:
+                if latest_mtime is None or mtime > latest_mtime:
+                    latest_mtime = mtime
+        return latest_mtime
+
+    def handle_polling(self, paths, old_mtime):
         # TODO: use inotify if available
         while True:
-            try:
-                mtime = int(os.stat(path).st_mtime)
-            except OSError:
+            mtime = self.get_latest_mtime(paths)
+            if mtime is None:
                 # Sometimes when you save a file in a text editor it stops
                 # existing for a brief moment.
                 # See https://github.com/mgedmin/restview/issues/11
@@ -142,7 +156,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             # we lose precision by using int(), but I'm nervous of
             # round-tripping floating point numbers through HTML and
             # comparing them for equality
-            if mtime != old_mtime:
+            if int(mtime) != int(old_mtime):
                 try:
                     self.send_response(200)
                     self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
@@ -187,7 +201,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.log_error("%s", e)
             self.send_error(404, "File not found: %s" % self.path)
 
-    def handle_command(self, command):
+    def handle_command(self, command, watch=None):
         try:
             p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
@@ -197,7 +211,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             if stderr or not stdout:
                 return self.handle_error(command, p.returncode, stderr)
             else:
-                return self.handle_rest_data(stdout)
+                mtime = self.get_latest_mtime(watch) if watch else None
+                return self.handle_rest_data(stdout, mtime=mtime)
         except OSError as e:
             self.log_error("%s", e)
             self.send_error(500, "Command execution failed")
@@ -388,9 +403,10 @@ class RestViewer(object):
     strict = False
     pypi_strict = False
 
-    def __init__(self, root, command=None):
+    def __init__(self, root, command=None, watch=None):
         self.root = root
         self.command = command
+        self.watch = watch
 
     def listen(self):
         """Start listening on a TCP port.
@@ -619,9 +635,15 @@ def main():
     parser.add_option('-e', '--execute', metavar='COMMAND',
                       help='run a command to produce ReStructuredText',
                       default=None)
+    parser.add_option('-w', '--watch', metavar='FILENAME', action='append',
+                      help='reload the page when a file changes (use with'
+                           ' --execute); can be specified multiple times',
+                      default=[])
     parser.add_option('--long-description',
                       help='run "python setup.py --long-description" to produce'
-                           ' ReStructuredText; also enables --pypi-strict',
+                           ' ReStructuredText; also enables --pypi-strict'
+                           ' and watches the usual long description sources'
+                           ' (setup.py, README.rst, CHANGES.rst)',
                       action='store_true')
     parser.add_option('--css', metavar='URL|FILENAME',
                       help='use the specified stylesheet; can be specified'
@@ -637,6 +659,7 @@ def main():
     opts, args = parser.parse_args(sys.argv[1:])
     if opts.long_description:
         opts.execute = 'python setup.py --long-description'
+        opts.watch += ['setup.py', 'README.rst', 'CHANGES.rst']
         opts.pypi_strict = True
     if not args and not opts.execute:
         parser.error("at least one argument expected")
@@ -645,7 +668,7 @@ def main():
     if opts.browser is None:
         opts.browser = opts.listen is None
     if opts.execute:
-        server = RestViewer('.', command=opts.execute)
+        server = RestViewer('.', command=opts.execute, watch=opts.watch)
     elif len(args) == 1:
         server = RestViewer(args[0])
     else:
