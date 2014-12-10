@@ -197,7 +197,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 mtime = os.fstat(f.fileno()).st_mtime
                 if watch:
                     mtime = self.get_latest_mtime(watch, mtime)
-                return self.handle_rest_data(f.read(), mtime=mtime)
+                return self.handle_rest_data(f.read(), mtime=mtime, filename=filename)
         except IOError as e:
             self.log_error("%s", e)
             self.send_error(404, "File not found: %s" % self.path)
@@ -218,8 +218,9 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.log_error("%s", e)
             self.send_error(500, "Command execution failed")
 
-    def handle_rest_data(self, data, mtime=None):
-        html = self.server.renderer.rest_to_html(data, mtime=mtime)
+    def handle_rest_data(self, data, mtime=None, filename=None):
+        html = self.server.renderer.rest_to_html(data, mtime=mtime,
+                                                 filename=filename)
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
@@ -439,7 +440,7 @@ class RestViewer(object):
     def close(self):
         self.server.server_close()
 
-    def rest_to_html(self, rest_input, settings=None, mtime=None):
+    def rest_to_html(self, rest_input, settings=None, mtime=None, filename=None):
         """Render ReStructuredText."""
         writer = docutils.writers.html4css1.Writer()
         if pygments is not None:
@@ -469,9 +470,11 @@ class RestViewer(object):
         try:
             if self.pypi_strict:
                 document = docutils.core.publish_doctree(source=rest_input,
+                    source_path=filename,
                     settings_overrides=settings_overrides)
                 checkLinkSchemes(document)
             docutils.core.publish_string(rest_input, writer=writer,
+                                         source_path=filename,
                                          settings_overrides=settings_overrides)
         except Exception as e:
             html = self.render_exception(e.__class__.__name__, str(e), rest_input, mtime=mtime)

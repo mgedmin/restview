@@ -43,7 +43,7 @@ class MyRequestHandlerForTests(MyRequestHandler):
         self.server = Mock()
         self.server.renderer.command = None
         self.server.renderer.watch = None
-        self.server.renderer.rest_to_html = lambda data, mtime=None: \
+        self.server.renderer.rest_to_html = lambda data, mtime=None, filename=None: \
             unicode('HTML for %s with AJAX poller for %s' % (data, mtime))
         self.server.renderer.render_exception = lambda title, error, source, mtime=None: \
             unicode('HTML for error %s: %s: %s' % (title, error, source))
