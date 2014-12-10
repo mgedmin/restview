@@ -623,10 +623,11 @@ def main():
                       help='run "python setup.py --long-description" to produce'
                            ' ReStructuredText; also enables --pypi-strict',
                       action='store_true')
-    parser.add_option('--css', metavar='(URL|FILENAME)[,...]',
-                      help='use the specified stylesheet(s) [default: %default]',
-                      action='store', dest='stylesheets',
-                      default=RestViewer.stylesheets)
+    parser.add_option('--css', metavar='URL|FILENAME',
+                      help='use the specified stylesheet; can be specified'
+                           ' multiple times [default: %s]'
+                           % RestViewer.stylesheets,
+                      action='append', dest='stylesheets', default=[])
     parser.add_option('--strict',
                       help='halt at the slightest problem',
                       action='store_true', default=False)
@@ -649,7 +650,8 @@ def main():
         server = RestViewer(args[0])
     else:
         server = RestViewer(args)
-    server.stylesheets = opts.stylesheets
+    if opts.stylesheets:
+        server.stylesheets = ','.join(opts.stylesheets)
     server.strict = opts.strict
     server.pypi_strict = opts.pypi_strict
 

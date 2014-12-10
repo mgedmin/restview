@@ -37,7 +37,8 @@ Usage: ``restview [options] filename-or-directory [...]``
 --long-description    run "python setup.py --long-description" to produce
                       ReStructuredText; also enables --pypi-strict
 --css=URL-or-FILENAME
-                      use the specified stylesheet
+                      use the specified stylesheet; can be specified multiple
+                      times [default: html4css1.css,restview.css]
 --strict              halt at the slightest problem
 --pypi-strict         enable additional restrictions that PyPI performs
 
