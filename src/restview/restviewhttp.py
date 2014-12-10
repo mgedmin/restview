@@ -334,8 +334,8 @@ window.onload = function () {
                         document.body.innerHTML = this.responseXML.body.innerHTML;
                         var old_styles = document.getElementsByTagName('style');
                         var new_styles = this.responseXML.getElementsByTagName('style');
-                        while (old_styles.length > 0) {
-                            old_styles[0].remove();
+                        for (var i = old_styles.length - 1; i >= 0; i--) {
+                            old_styles[i].remove();
                         }
                         for (var i = 0; i < new_styles.length; i++) {
                             document.head.appendChild(new_styles[i]);
