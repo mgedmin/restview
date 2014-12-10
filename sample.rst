@@ -74,6 +74,9 @@ oh and some doctests that demonstrate the ``uniq()`` function:
     >>> uniq([1, 2, 3, 2, 1])
     [1, 2, 3]
 
+    >>> uniq([3, 2, 1])
+    [1, 2, 3]
+
 The alignment is kept the same for all of them, including simple
 quoted blocks
 
