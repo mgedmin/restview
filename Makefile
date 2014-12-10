@@ -19,7 +19,7 @@ all:
 
 .PHONY: test
 test:
-	$(PYTHON) setup.py test
+	nosetests
 
 .PHONY: check
 check:
