@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.2.0 (unreleased)
+2.2.0 (2014-12-10)
 ------------------
 
 - Reload the page using AJAX to preserve scroll position.
