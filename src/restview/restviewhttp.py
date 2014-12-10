@@ -370,12 +370,12 @@ ERROR_TEMPLATE = """\
 <title>$title</title>
 <style type="text/css">
 pre.error {
-    border-left: 3px double red;
-    margin-left: 19px;
-    padding-left: 19px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    border-left: 1ex solid red;
+    padding-left: 1.5em;
+    padding-top: 1em;
+    padding-bottom: 1em;
     color: red;
+    background: #fff8f8;
 }
 </style>
 </head>

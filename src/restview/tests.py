@@ -606,12 +606,7 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
         <title>SystemMessage</title>
         <style type="text/css">
         pre.error {
-            border-left: 3px double red;
-            margin-left: 19px;
-            padding-left: 19px;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            color: red;
+            ...
         }
         </style>
         </head>
@@ -656,18 +651,14 @@ def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
         ... Here is a `relative link <example.com>`__.
         ...
         ... ''').strip())
+        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <!DOCTYPE html>
         <html>
         <head>
         <title>TransformError</title>
         <style type="text/css">
         pre.error {
-            border-left: 3px double red;
-            margin-left: 19px;
-            padding-left: 19px;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            color: red;
+            ...
         }
         </style>
         </head>
