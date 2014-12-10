@@ -234,7 +234,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def handle_error(self, command, retcode, stderr, mtime=None):
         html = self.server.renderer.render_exception(
             title=command,
-            error='Returned error code %s' % retcode,
+            error='Process returned error code %s.' % retcode,
             source=stderr or '(no output)',
             mtime=mtime)
         if isinstance(html, unicode):
