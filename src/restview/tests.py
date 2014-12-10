@@ -45,7 +45,7 @@ class MyRequestHandlerForTests(MyRequestHandler):
         self.server.renderer.watch = None
         self.server.renderer.rest_to_html = lambda data, mtime=None: \
             unicode('HTML for %s with AJAX poller for %s' % (data, mtime))
-        self.server.renderer.render_exception = lambda title, error, source: \
+        self.server.renderer.render_exception = lambda title, error, source, mtime=None: \
             unicode('HTML for error %s: %s: %s' % (title, error, source))
     def send_response(self, status):
         self.status = status
@@ -369,6 +369,22 @@ class TestMyRequestHandler(unittest.TestCase):
                          str(len(body)))
         self.assertEqual(handler.headers['Cache-Control'],
                          "no-cache, no-store, max-age=0")
+        self.assertFalse('X-Restview-Mtime' in handler.headers)
+        self.assertTrue(b'cat: README.rst: no such file' in body,
+                        body)
+
+    def test_handle_command_returns_error_with_watch_files(self):
+        handler = MyRequestHandlerForTests()
+        with patch('subprocess.Popen', PopenStub('', 'cat: README.rst: no such file', 1)):
+            body = handler.handle_command('cat README.rst', watch=['README.rst'])
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Content-Type'],
+                         "text/html; charset=UTF-8")
+        self.assertEqual(handler.headers['Content-Length'],
+                         str(len(body)))
+        self.assertEqual(handler.headers['Cache-Control'],
+                         "no-cache, no-store, max-age=0")
+        self.assertTrue('X-Restview-Mtime' in handler.headers)
         self.assertTrue(b'cat: README.rst: no such file' in body,
                         body)
 
@@ -582,7 +598,8 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
         >>> viewer.strict = True
         >>> print(viewer.rest_to_html(b'''
         ... Some text with an `error
-        ... ''').strip())
+        ... ''', mtime=1364808683).strip())
+        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <!DOCTYPE html>
         <html>
         <head>
@@ -608,6 +625,11 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
         Some text with an `error
         <BLANKLINE>
         </pre>
+        <BLANKLINE>
+        <script type="text/javascript">
+        var mtime = '1364808683';
+        ...
+        </script>
         </body>
         </html>
 

@@ -204,15 +204,15 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def handle_command(self, command, watch=None):
         try:
+            mtime = self.get_latest_mtime(watch) if watch else None
             p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             stdout, stderr = p.communicate()
             if p.returncode != 0:
                 self.log_error("'%s' terminated with %s", command, p.returncode)
             if stderr or not stdout:
-                return self.handle_error(command, p.returncode, stderr)
+                return self.handle_error(command, p.returncode, stderr, mtime=mtime)
             else:
-                mtime = self.get_latest_mtime(watch) if watch else None
                 return self.handle_rest_data(stdout, mtime=mtime)
         except OSError as e:
             self.log_error("%s", e)
@@ -231,17 +231,20 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.end_headers()
         return html
 
-    def handle_error(self, command, retcode, stderr):
+    def handle_error(self, command, retcode, stderr, mtime=None):
         html = self.server.renderer.render_exception(
             title=command,
             error='Returned error code %s' % retcode,
-            source=stderr or '(no output)')
+            source=stderr or '(no output)',
+            mtime=mtime)
         if isinstance(html, unicode):
             html = html.encode('UTF-8')
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=UTF-8")
         self.send_header("Content-Length", str(len(html)))
         self.send_header("Cache-Control", "no-cache, no-store, max-age=0")
+        if mtime is not None:
+            self.send_header("X-Restview-Mtime", str(mtime))
         self.end_headers()
         return html
 
@@ -471,19 +474,20 @@ class RestViewer(object):
             docutils.core.publish_string(rest_input, writer=writer,
                                          settings_overrides=settings_overrides)
         except Exception as e:
-            html = self.render_exception(e.__class__.__name__, str(e), rest_input)
+            html = self.render_exception(e.__class__.__name__, str(e), rest_input, mtime=mtime)
         else:
             html = writer.output
         return self.inject_ajax(html, mtime=mtime)
 
-    def render_exception(self, title, error, source):
+    def render_exception(self, title, error, source, mtime=None):
         # NB: source is a bytestring (see issue #16 for the reason)
         # UTF-8 is not necessarily the right thing to use here, but
         # garbage is better than a crash, right?
         source = source.decode('UTF-8', 'replace')
-        return (ERROR_TEMPLATE.replace('$title', escape(title))
+        html = (ERROR_TEMPLATE.replace('$title', escape(title))
                               .replace('$error', escape(error))
                               .replace('$source', escape(source)))
+        return self.inject_ajax(html, mtime=mtime)
 
     def inject_ajax(self, markup, mtime=None):
         if mtime is not None:

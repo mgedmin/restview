@@ -43,6 +43,8 @@ Changelog
 - ``restview --long-description`` watches setup.py, README.rst and CHANGES.rst
   for updates and reloads the description automatically.
 
+- Error pages will also reload automatically if the source file changes.
+
 
 2.1.1 (2014-09-28)
 ------------------
