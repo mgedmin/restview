@@ -1,8 +1,39 @@
 Changelog
 =========
 
-2.1.2 (unreleased)
+2.2.0 (unreleased)
 ------------------
+
+- Use the default docutils CSS instead of replacing it wholesale.
+  Drop some of our styles, including:
+
+  - left-aligned document title
+  - sans-serif font override for document text
+  - fully-justified text
+  - bold terms in definition lists
+  - custom table rendering with just horizontal rules (issue #23)
+
+  Keep other custom style overrides:
+
+  - custom footnote rendering (I really like it)
+  - white background for code blocks
+  - prettier system error messages
+  - unified alignment of code blocks, block quotes and doctests
+
+  If you want to go back to previous look, you can use ::
+
+    restview --css oldrestview.css ...
+
+  If you want your own custom style on top of the standard docutils
+  styles, use ::
+
+    restview --css html4css1.css,./path/to/my.css
+
+  And if you want to completely override the stylesheet, use ::
+
+    restview --css ./path/to/my.css
+
+  Fixes https://github.com/mgedmin/restview/issues/23.
 
 
 2.1.1 (2014-09-28)

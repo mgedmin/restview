@@ -457,6 +457,7 @@ def doctest_RestViewer_rest_to_html():
         ...
         ... This is an inline literal: ``README.txt``.
         ... ''', settings={'cloak_email_addresses': True}).strip())
+        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <?xml version="1.0" encoding="utf-8" ?>
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -465,13 +466,10 @@ def doctest_RestViewer_rest_to_html():
         ...
         <title>example</title>
         <style type="text/css">
-        <BLANKLINE>
-        /*
-         * Stylesheet for ReStructuredText by Marius Gedminas.
-         * (I didn't like the default one)
         ...
-        </style>
-        <style type="text/css">
+        /*
+         * Stylesheet overrides for ReSTview
+         */
         ...
         </style>
         </head>
@@ -508,10 +506,11 @@ def doctest_RestViewer_rest_to_html_css_url():
     means it's hard to override them!
 
         >>> viewer = RestViewer('.')
-        >>> viewer.css_url = 'http://example.com/my.css'
+        >>> viewer.stylesheets = 'http://example.com/my.css'
         >>> print(viewer.rest_to_html(b'''
         ... Some text
         ... ''').strip())
+        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <?xml version="1.0" encoding="utf-8" ?>
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -543,7 +542,7 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
         >>> stderr = stderr_patcher.start()
 
         >>> viewer = RestViewer('.')
-        >>> viewer.css_path = viewer.css_url = None
+        >>> viewer.stylesheets = None
         >>> viewer.strict = True
         >>> print(viewer.rest_to_html(b'''
         ... Some text with an `error
@@ -588,7 +587,7 @@ def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
         >>> stderr = stderr_patcher.start()
 
         >>> viewer = RestViewer('.')
-        >>> viewer.css_path = viewer.css_url = None
+        >>> viewer.stylesheets = None
         >>> viewer.pypi_strict = True
         >>> print(viewer.rest_to_html(b'''
         ... Hello

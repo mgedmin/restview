@@ -70,6 +70,11 @@ except NameError:
 __version__ = "2.1.2dev"
 
 
+# If restview is ever packaged for Debian, this'll likely be changed to
+# point to /usr/share/restview
+DATA_PATH = os.path.dirname(os.path.realpath(__file__))
+
+
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """HTTP request handler that renders ReStructuredText on the fly."""
 
@@ -359,13 +364,13 @@ class RestViewer(object):
 
     local_address = ('localhost', 0)
 
-    # only set one of these two:
-    css_url = None
-    css_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                            'default.css')
+    # Comma-separated list of URLs, full filenames, or filenames in the
+    # default search path (if you want to refer to docutils default
+    # stylesheets html4css1.css or math.css, or restview's default
+    # stylesheets restview.css and oldrestview.css).
+    stylesheets = 'html4css1.css,restview.css'
 
-    favicon_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                'favicon.ico')
+    favicon_path = os.path.join(DATA_PATH, 'favicon.ico')
 
     strict = False
     pypi_strict = False
@@ -398,14 +403,14 @@ class RestViewer(object):
         writer = docutils.writers.html4css1.Writer()
         if pygments is not None:
             writer.translator_class = SyntaxHighlightingHTMLTranslator
-        if self.css_url:
-            settings_overrides = {'stylesheet': self.css_url,
+        if self.stylesheets:
+            stylesheet_dirs = writer.default_stylesheet_dirs + [DATA_PATH]
+            # docutils can't embed http:// or https:// URLs
+            embed_stylesheet = '//' not in self.stylesheets
+            settings_overrides = {'stylesheet': self.stylesheets,
                                   'stylesheet_path': None,
-                                  'embed_stylesheet': False}
-        elif self.css_path:
-            settings_overrides = {'stylesheet': self.css_path,
-                                  'stylesheet_path': None,
-                                  'embed_stylesheet': True}
+                                  'stylesheet_dirs': stylesheet_dirs,
+                                  'embed_stylesheet': embed_stylesheet}
         else:
             settings_overrides = {}
         settings_overrides['syntax_highlight'] = 'short'
@@ -605,9 +610,10 @@ def main():
                       help='run "python setup.py --long-description" to produce'
                            ' ReStructuredText; also enables --pypi-strict',
                       action='store_true')
-    parser.add_option('--css', metavar='URL-or-FILENAME',
-                      help='use the specified stylesheet',
-                      action='store', dest='css_path', default=None)
+    parser.add_option('--css', metavar='(URL|FILENAME)[,...]',
+                      help='use the specified stylesheet(s) [default: %default]',
+                      action='store', dest='stylesheets',
+                      default=RestViewer.stylesheets)
     parser.add_option('--strict',
                       help='halt at the slightest problem',
                       action='store_true', default=False)
@@ -630,14 +636,7 @@ def main():
         server = RestViewer(args[0])
     else:
         server = RestViewer(args)
-    if opts.css_path:
-        if opts.css_path.startswith(('http://', 'https://')):
-            server.css_url = opts.css_path
-            server.css_path = None
-        else:
-            server.css_path = opts.css_path
-            server.css_url = None
-
+    server.stylesheets = opts.stylesheets
     server.strict = opts.strict
     server.pypi_strict = opts.pypi_strict
 
