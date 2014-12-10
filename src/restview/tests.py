@@ -91,7 +91,7 @@ class TestMyRequestHandler(unittest.TestCase):
         handler = MyRequestHandlerForTests()
         handler.path = '/a.txt'
         handler.server.renderer.root = self.filepath('file.txt')
-        handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
+        handler.handle_rest_file = lambda fn, watch=None: 'HTML for %s' % fn
         handler.wfile = StringIO()
         handler.do_GET()
         self.assertEqual(handler.wfile.getvalue(),
@@ -101,7 +101,7 @@ class TestMyRequestHandler(unittest.TestCase):
         handler = MyRequestHandlerForTests()
         handler.path = '/a.txt'
         handler.server.renderer.root = self.filepath('file.txt')
-        handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
+        handler.handle_rest_file = lambda fn, watch=None: 'HTML for %s' % fn
         handler.wfile = StringIO()
         handler.do_HEAD()
         self.assertEqual(handler.wfile.getvalue(), '')
@@ -111,7 +111,7 @@ class TestMyRequestHandler(unittest.TestCase):
         handler.path = '/'
         handler.server.renderer.root = self.filepath('file.txt')
         handler.server.renderer.command = None
-        handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
+        handler.handle_rest_file = lambda fn, watch=None: 'HTML for %s' % fn
         with patch('os.path.isdir', lambda dir: False):
             body = handler.do_GET_or_HEAD()
         self.assertEqual(body, 'HTML for %s' % self.filepath('file.txt'))
@@ -163,7 +163,7 @@ class TestMyRequestHandler(unittest.TestCase):
         expected_fn = self.filepath('a.txt')
         self.assertEqual(body, 'Got update for %s since 12345' % expected_fn)
 
-    def test_do_GET_or_HEAD_polling_of_watch_files(self):
+    def test_do_GET_or_HEAD_polling_of_command_with_watch_files(self):
         handler = MyRequestHandlerForTests()
         handler.path = '/polling?pathname=/&mtime=12345'
         handler.server.renderer.command = 'python setup.py --long-description'
@@ -171,6 +171,16 @@ class TestMyRequestHandler(unittest.TestCase):
         handler.handle_polling = lambda fns, mt: 'Got update for %s since %s' % (','.join(fns), mt)
         body = handler.do_GET_or_HEAD()
         self.assertEqual(body, 'Got update for setup.py,README.rst since 12345')
+
+    def test_do_GET_or_HEAD_polling_of_root_with_watch_files(self):
+        handler = MyRequestHandlerForTests()
+        handler.path = '/polling?pathname=/&mtime=12345'
+        handler.server.renderer.root = self.filepath('a.txt')
+        handler.server.renderer.watch = ['my.css']
+        handler.handle_polling = lambda fns, mt: 'Got update for %s since %s' % (','.join(fns), mt)
+        body = handler.do_GET_or_HEAD()
+        expected_fn = self.filepath('a.txt')
+        self.assertEqual(body, 'Got update for %s,my.css since 12345' % expected_fn)
 
     def test_do_GET_or_HEAD_prevent_sandbox_climbing_attacks(self):
         handler = MyRequestHandlerForTests()
@@ -199,7 +209,7 @@ class TestMyRequestHandler(unittest.TestCase):
             handler = MyRequestHandlerForTests()
             handler.path = '/' + filename
             handler.server.renderer.root = self.filepath('file.txt')
-            handler.handle_rest_file = lambda fn: 'HTML for %s' % fn
+            handler.handle_rest_file = lambda fn, watch=None: 'HTML for %s' % fn
             body = handler.do_GET_or_HEAD()
             self.assertEqual(body, 'HTML for %s' % self.filepath(filename))
 
@@ -306,6 +316,21 @@ class TestMyRequestHandler(unittest.TestCase):
         self.assertEqual(handler.headers['Cache-Control'],
                          "no-cache, no-store, max-age=0")
         self.assertTrue(body.startswith(b'HTML for'))
+        self.assertTrue(body.endswith(('with AJAX poller for %s' % mtime).encode()))
+
+    def test_handle_rest_file_extra_watch(self):
+        handler = MyRequestHandlerForTests()
+        filename = os.path.join(os.path.dirname(__file__), '__init__.py')
+        mtime = os.stat(filename).st_mtime
+        with patch('os.stat', lambda fn: {filename: Mock(st_mtime=mtime),
+                                          'my.css': Mock(st_mtime=mtime + 1)}[fn]):
+            body = handler.handle_rest_file(filename, watch=['my.css'])
+        self.assertEqual(handler.status, 200)
+        self.assertTrue(body.endswith(('with AJAX poller for %s' % (mtime + 1)).encode()))
+        with patch('os.stat', lambda fn: {filename: Mock(st_mtime=mtime),
+                                          'my.css': Mock(st_mtime=mtime - 1)}[fn]):
+            body = handler.handle_rest_file(filename, watch=['my.css'])
+        self.assertEqual(handler.status, 200)
         self.assertTrue(body.endswith(('with AJAX poller for %s' % mtime).encode()))
 
     def test_handle_rest_file_error(self):

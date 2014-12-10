@@ -95,26 +95,28 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             return
         root = self.server.renderer.root
         command = self.server.renderer.command
+        watch = self.server.renderer.watch
         if self.path == '/':
             if command:
-                watch = self.server.renderer.watch
                 return self.handle_command(command, watch)
             elif isinstance(root, str):
                 if os.path.isdir(root):
                     return self.handle_dir(root)
                 else:
-                    return self.handle_rest_file(root)
+                    return self.handle_rest_file(root, watch)
             else:
                 return self.handle_list(root)
         elif self.path.startswith('/polling?'):
             query = parse_qs(self.path.partition('?')[-1])
             pathname = query['pathname'][0]
-            if pathname == '/' and self.server.renderer.command:
-                pathnames = self.server.renderer.watch
+            if pathname == '/' and command:
+                pathnames = []
             elif pathname == '/' and isinstance(root, str):
                 pathnames = [root]
             else:
                 pathnames = [self.translate_path(pathname)]
+            if watch:
+                pathnames += watch
             old_mtime = int(query['mtime'][0])
             return self.handle_polling(pathnames, old_mtime)
         elif self.path == '/favicon.ico':
@@ -127,12 +129,11 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         elif self.path.endswith('.jpg') or self.path.endswith('.jpeg'):
             return self.handle_image(self.translate_path(), 'image/jpeg')
         elif self.path.endswith('.txt') or self.path.endswith('.rst'):
-            return self.handle_rest_file(self.translate_path())
+            return self.handle_rest_file(self.translate_path(), watch)
         else:
             self.send_error(501, "File type not supported: %s" % self.path)
 
-    def get_latest_mtime(self, filenames):
-        latest_mtime = None
+    def get_latest_mtime(self, filenames, latest_mtime=None):
         for path in filenames:
             try:
                 mtime = os.stat(path).st_mtime
@@ -192,10 +193,12 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.end_headers()
             return data
 
-    def handle_rest_file(self, filename):
+    def handle_rest_file(self, filename, watch=None):
         try:
             with open(filename, 'rb') as f:
                 mtime = os.fstat(f.fileno()).st_mtime
+                if watch:
+                    mtime = self.get_latest_mtime(watch, mtime)
                 return self.handle_rest_data(f.read(), mtime=mtime)
         except IOError as e:
             self.log_error("%s", e)
@@ -329,6 +332,14 @@ window.onload = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         document.title = this.responseXML.title;
                         document.body.innerHTML = this.responseXML.body.innerHTML;
+                        var old_styles = document.getElementsByTagName('style');
+                        var new_styles = this.responseXML.getElementsByTagName('style');
+                        for (var i = 0; i < old_styles.length; i++) {
+                            old_styles[i].remove();
+                        }
+                        for (var i = 0; i < new_styles.length; i++) {
+                            document.head.appendChild(new_styles[i]);
+                        }
                         mtime = this.getResponseHeader('X-Restview-Mtime');
                         if (mtime) {
                             poll.open('HEAD', '/polling?pathname=' + location.pathname + '&mtime=' + mtime, true);
@@ -670,9 +681,9 @@ def main():
     if opts.execute:
         server = RestViewer('.', command=opts.execute, watch=opts.watch)
     elif len(args) == 1:
-        server = RestViewer(args[0])
+        server = RestViewer(args[0], watch=opts.watch)
     else:
-        server = RestViewer(args)
+        server = RestViewer(args, watch=opts.watch)
     if opts.stylesheets:
         server.stylesheets = ','.join(opts.stylesheets)
     server.strict = opts.strict
