@@ -4,6 +4,9 @@ Changelog
 2.2.1 (unreleased)
 ------------------
 
+- Fix style loss on autoreloading.
+  Fixes https://github.com/mgedmin/restview/issues/25.
+
 
 2.2.0 (2014-12-10)
 ------------------

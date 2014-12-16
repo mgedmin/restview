@@ -339,6 +339,10 @@ window.onload = function () {
                         for (var i = old_styles.length - 1; i >= 0; i--) {
                             old_styles[i].remove();
                         }
+                        // convert HTMLCollection to an array so that
+                        // items don't disappear from under us when I append
+                        // them to a different DOM tree
+                        new_styles = [].slice.call(new_styles);
                         for (var i = 0; i < new_styles.length; i++) {
                             document.head.appendChild(new_styles[i]);
                         }
