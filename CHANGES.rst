@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.2.1 (unreleased)
+2.2.1 (2015-01-06)
 ------------------
 
 - Fix style loss on autoreloading.
