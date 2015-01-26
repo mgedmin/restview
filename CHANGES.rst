@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.3.0 (unreleased)
+2.3.0 (2015-01-26)
 ------------------
 
 - Follow PyPI's lead and rely on `readme
