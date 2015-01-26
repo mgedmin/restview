@@ -9,3 +9,4 @@ distribute-*.tar.gz
 .coverage
 *.pyc
 __pycache__/
+man/

@@ -13,13 +13,12 @@ default: all
 
 
 .PHONY: all
-all:
-	@echo "Nothing to do"
+all: bin/restview bin/nosetests
 
 
 .PHONY: test
-test:
-	nosetests
+test: bin/nosetests
+	bin/nosetests
 
 .PHONY: check
 check:
@@ -85,3 +84,11 @@ release: releasechecklist
 	@echo '  $(VCS_COMMIT_AND_PUSH)'
 	@echo
 
+bin/nosetests: bin/pip
+	bin/pip install nose mock
+
+bin/restview: bin/pip setup.py
+	bin/pip install -e .
+
+bin/pip:
+	virtualenv .
