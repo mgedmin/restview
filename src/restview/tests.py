@@ -648,7 +648,7 @@ def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
         ...
         ... .. include:: /etc/passwd
         ...
-        ... ''').strip())
+        ... ''').strip().replace("&quot;", '"'))
         ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <!DOCTYPE html>
         <html>
@@ -663,7 +663,7 @@ def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
         <body>
         <h1>SystemMessage</h1>
         <pre class="error">
-        &lt;string&gt;:5: (WARNING/2) &quot;include&quot; directive disabled.
+        &lt;string&gt;:5: (WARNING/2) "include" directive disabled.
         </pre>
         <pre>
         <BLANKLINE>
