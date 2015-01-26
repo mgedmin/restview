@@ -55,10 +55,9 @@ except ImportError:
 
 import docutils.core
 import docutils.writers.html4css1
+import readme.rst
 import pygments
 from pygments import lexers, formatters
-
-from restview.pypi_support import trim_docstring, checkLinkSchemes
 
 
 try:
@@ -461,10 +460,7 @@ class RestViewer(object):
             settings_overrides = {}
         settings_overrides['syntax_highlight'] = 'short'
         if self.pypi_strict:
-            settings_overrides['raw_enabled'] = 0
-            settings_overrides['file_insertion_enabled'] = 0
-            settings_overrides['halt_level'] = 2
-            rest_input = trim_docstring(rest_input)
+            settings_overrides.update(readme.rst.SETTINGS)
         if self.strict:
             settings_overrides['halt_level'] = 1
 
@@ -472,17 +468,15 @@ class RestViewer(object):
             settings_overrides.update(settings)
 
         try:
-            if self.pypi_strict:
-                document = docutils.core.publish_doctree(source=rest_input,
-                    source_path=filename,
-                    settings_overrides=settings_overrides)
-                checkLinkSchemes(document)
             docutils.core.publish_string(rest_input, writer=writer,
                                          source_path=filename,
                                          settings_overrides=settings_overrides)
         except Exception as e:
             html = self.render_exception(e.__class__.__name__, str(e), rest_input, mtime=mtime)
         else:
+            if self.pypi_strict:
+                writer.fragment = readme.rst.clean(''.join(writer.fragment))
+                writer.output = writer.apply_template()
             html = writer.output
         return self.inject_ajax(html, mtime=mtime)
 
@@ -503,8 +497,7 @@ class RestViewer(object):
             return markup
 
 
-class SyntaxHighlightingHTMLTranslator(docutils.writers.html4css1.HTMLTranslator):
-
+class SyntaxHighlightingHTMLTranslator(readme.rst.ReadMeHTMLTranslator):
     in_doctest = False
     in_text = False
     in_reference = False

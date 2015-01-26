@@ -646,16 +646,14 @@ def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
         ... Hello
         ... -----
         ...
-        ... .. image:: https://example.com/buildstatus.png
-        ...
-        ... Here is a `relative link <example.com>`__.
+        ... .. include:: /etc/passwd
         ...
         ... ''').strip())
         ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <!DOCTYPE html>
         <html>
         <head>
-        <title>TransformError</title>
+        <title>SystemMessage</title>
         <style type="text/css">
         pre.error {
             ...
@@ -663,17 +661,18 @@ def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
         </style>
         </head>
         <body>
-        <h1>TransformError</h1>
+        <h1>SystemMessage</h1>
         <pre class="error">
-        link scheme not allowed: example.com
+        &lt;string&gt;:5: (WARNING/2) &quot;include&quot; directive disabled.
         </pre>
         <pre>
+        <BLANKLINE>
         Hello
         -----
         <BLANKLINE>
-        .. image:: https://example.com/buildstatus.png
+        .. include:: /etc/passwd
         <BLANKLINE>
-        Here is a `relative link &lt;example.com&gt;`__.
+        <BLANKLINE>
         </pre>
         </body>
         </html>
@@ -765,10 +764,6 @@ class TestGlobals(unittest.TestCase):
                                            args=('http://example.com',))
             Thread.return_value.setDaemon.assert_called_once_with(True)
             Thread.return_value.start.assert_called_once()
-
-    def test_trim_docstring(self):
-        from restview.pypi_support import trim_docstring
-        self.assertEqual(trim_docstring(""), "")
 
 
 class TestMain(unittest.TestCase):

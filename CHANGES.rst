@@ -1,8 +1,12 @@
 Changelog
 =========
 
-2.2.2 (unreleased)
+2.3.0 (unreleased)
 ------------------
+
+- Follow PyPI's lead and rely on `readme
+  <https://pypi.python.org/pypi/readme>`__ for rendering in --pypi-strict mode.
+  Fixes https://github.com/mgedmin/restview/issues/28.
 
 
 2.2.1 (2015-01-06)
