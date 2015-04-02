@@ -7,6 +7,7 @@ python:
     - 3.3
     - 3.4
     - pypy
+    - pypy3
 install:
     - pip install mock coverage coveralls
     - pip install .
