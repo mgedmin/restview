@@ -4,3 +4,4 @@ exclude_lines =
     except ImportError:
     except NameError:
     if __name__ == '__main__':
+    def test_suite[(][)]:

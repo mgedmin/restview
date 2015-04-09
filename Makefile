@@ -13,12 +13,12 @@ default: all
 
 
 .PHONY: all
-all: bin/restview bin/nosetests
+all: bin/restview bin/py.test
 
 
 .PHONY: test
-test: bin/nosetests
-	bin/nosetests
+test: bin/py.test
+	bin/py.test
 
 .PHONY: check
 check:
@@ -84,8 +84,8 @@ release: releasechecklist
 	@echo '  $(VCS_COMMIT_AND_PUSH)'
 	@echo
 
-bin/nosetests: bin/pip
-	bin/pip install nose mock
+bin/py.test: bin/pip
+	bin/pip install pytest mock
 
 bin/restview: bin/pip setup.py
 	bin/pip install -e .
