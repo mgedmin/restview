@@ -10,3 +10,4 @@ distribute-*.tar.gz
 *.pyc
 __pycache__/
 man/
+.eggs/
