@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.4.0 (unreleased)
+2.4.0 (2015-05-27)
 ------------------
 
 - Drop Python 3.2 support.
