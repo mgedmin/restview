@@ -1,10 +1,13 @@
 Changelog
 =========
 
-2.3.1 (unreleased)
+2.4.0 (unreleased)
 ------------------
 
 - Drop Python 3.2 support.
+
+- Stop dynamic computation of install_requires in setup.py, this doesn't work
+  well in the presence of the pip 7 wheel cache.
 
 
 2.3.0 (2015-01-26)
