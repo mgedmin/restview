@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import sys
 from setuptools import setup
 
 
@@ -39,7 +38,6 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: Implementation :: CPython',
@@ -56,7 +54,7 @@ setup(
     package_dir={'': 'src'},
     package_data={'restview': ['*.css', '*.ico']},
     include_package_data=True,
-    install_requires=['docutils', 'readme', 'pygments' + (' < 2.0a' if sys.version_info[:2] == (3, 2) else '')],
+    install_requires=['docutils', 'readme', 'pygments'],
     extras_require={'syntax': []},
     test_suite='restview.tests.test_suite',
     tests_require=['mock'],
