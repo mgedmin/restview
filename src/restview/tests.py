@@ -746,7 +746,7 @@ class TestRestViewer(unittest.TestCase):
         viewer = RestViewer('.')
         viewer.server = Mock()
         viewer.serve()
-        viewer.server.serve_forever.assert_called_once()
+        self.assertEqual(viewer.server.serve_forever.call_count, 1)
 
 
 class TestGlobals(unittest.TestCase):
@@ -763,7 +763,7 @@ class TestGlobals(unittest.TestCase):
             Thread.assert_called_once_with(target=webbrowser.open,
                                            args=('http://example.com',))
             Thread.return_value.setDaemon.assert_called_once_with(True)
-            Thread.return_value.start.assert_called_once()
+            self.assertEqual(Thread.return_value.start.call_count, 1)
 
 
 class TestMain(unittest.TestCase):
@@ -795,7 +795,7 @@ class TestMain(unittest.TestCase):
                             if serve_called:
                                 self.assertTrue(self._serve_called)
                             if browser_launched:
-                                launch_browser.assert_called_once()
+                                self.assertEqual(launch_browser.call_count, 1)
                             return stdout.getvalue(), stderr.getvalue()
 
     def test_help(self):
