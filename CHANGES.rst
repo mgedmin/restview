@@ -4,6 +4,8 @@ Changelog
 2.4.1 (unreleased)
 ------------------
 
+- Drop Python 2.6 support.
+
 
 2.4.0 (2015-05-27)
 ------------------
