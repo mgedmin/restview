@@ -831,7 +831,7 @@ class TestMain(unittest.TestCase):
         with patch.object(RestViewer, 'listen'):
             with patch.object(RestViewer, 'close'):
                 self.run_main('-l', '0.0.0.0:8080', '.',
-                            serve_called=True, browser_launched=True)
+                            serve_called=True, browser_launched=False)
 
     def test_specify_invalid_listen_address(self):
         stdout, stderr = self.run_main('-l', 'nonsense', '.', rc=2)
