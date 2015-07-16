@@ -17,7 +17,7 @@ all: bin/restview bin/py.test
 
 
 .PHONY: test
-test: bin/py.test
+test: bin/py.test bin/restview
 	bin/py.test
 
 .PHONY: check
