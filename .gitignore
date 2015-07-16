@@ -11,3 +11,5 @@ distribute-*.tar.gz
 __pycache__/
 man/
 .eggs/
+.env/
+bin
