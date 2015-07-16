@@ -90,8 +90,8 @@ bin/py.test: bin/pip
 bin/restview: bin/pip setup.py
 	bin/pip install -e .
 
-bin/pip: .env/bin/pip
-	ln -sf .env/bin bin
+bin/pip: .venv/bin/pip
+	ln -sf .venv/bin bin
 
-.env/bin/pip:
-	virtualenv -p $(PYTHON) .env
+.venv/bin/pip:
+	virtualenv -p $(PYTHON) .venv
