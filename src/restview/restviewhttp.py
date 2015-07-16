@@ -475,7 +475,7 @@ class RestViewer(object):
             html = self.render_exception(e.__class__.__name__, str(e), rest_input, mtime=mtime)
         else:
             if self.pypi_strict:
-                writer.fragment = readme.rst.clean(''.join(writer.fragment))
+                writer.body = [readme.rst.clean(''.join(writer.body))]
                 writer.output = writer.apply_template()
             html = writer.output
         return self.inject_ajax(html, mtime=mtime)

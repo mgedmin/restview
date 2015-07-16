@@ -682,6 +682,44 @@ def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
     """
 
 
+def doctest_RestViewer_rest_to_html_pypi_strict():
+    """Test for RestViewer.rest_to_html in --pypi-strict mode
+
+        >>> stderr_patcher = patch('sys.stderr', StringIO())
+
+        >>> viewer = RestViewer('.')
+        >>> viewer.stylesheets = None
+        >>> viewer.pypi_strict = True
+        >>> print(viewer.rest_to_html(b'''
+        ... Hello
+        ... -----
+        ...
+        ... `This is fine <http://www.example.com>`__.
+        ...
+        ... ''').strip().replace("&quot;", '"'))
+        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
+        <?xml version="1.0" encoding="utf-8" ?>
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        ...
+        <title>Hello</title>
+        <style type="text/css">
+        ...
+        </head>
+        <body>
+        <div class="document" id="hello">
+        <h1 class="title">Hello</h1>
+        <BLANKLINE>
+        <p><a href="http://www.example.com" rel="nofollow">This is fine</a>.</p>
+        </div>
+        </body>
+        </html>
+
+    """
+
+
 def doctest_RestViewer_inject_ajax():
     """Test for RestViewer.inject_ajax
 
