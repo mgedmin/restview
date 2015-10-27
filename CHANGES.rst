@@ -1,10 +1,15 @@
 Changelog
 =========
 
-2.4.1 (unreleased)
+2.5.0 (unreleased)
 ------------------
 
+- Fix HTML cleaning code in --pypi-strict mode (`#33
+  <https://github.com/mgedmin/restview/issues/33>`_).
+
 - Drop Python 2.6 support.
+
+- Claim Python 3.5 support.
 
 
 2.4.0 (2015-05-27)
