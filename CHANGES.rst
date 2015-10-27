@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.5.0 (unreleased)
+2.5.0 (2015-10-27)
 ------------------
 
 - Fix HTML cleaning code in --pypi-strict mode (`#33

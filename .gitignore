@@ -13,3 +13,4 @@ man/
 .eggs/
 .venv/
 bin
+.cache/
