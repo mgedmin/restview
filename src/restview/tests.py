@@ -195,6 +195,7 @@ class TestMyRequestHandler(unittest.TestCase):
                                 ('a.gif', 'image/gif'),
                                 ('a.jpg', 'image/jpeg'),
                                 ('a.jpeg', 'image/jpeg'),
+                                ('a.svg', 'image/svg'),
                                 ('favicon.ico', 'image/x-icon')]:
             handler = MyRequestHandlerForTests()
             handler.path = '/' + filename

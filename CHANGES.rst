@@ -4,6 +4,8 @@ Changelog
 2.5.1 (unreleased)
 ------------------
 
+- Support SVG images (`#36 <https://github.com/mgedmin/restview/issues/36>`_).
+
 
 2.5.0 (2015-10-27)
 ------------------

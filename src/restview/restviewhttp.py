@@ -127,6 +127,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             return self.handle_image(self.translate_path(), 'image/png')
         elif self.path.endswith('.jpg') or self.path.endswith('.jpeg'):
             return self.handle_image(self.translate_path(), 'image/jpeg')
+        elif self.path.endswith('.svg'):
+            return self.handle_image(self.translate_path(), 'image/svg')
         elif self.path.endswith('.txt') or self.path.endswith('.rst'):
             return self.handle_rest_file(self.translate_path(), watch)
         else:
