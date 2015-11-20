@@ -4,6 +4,9 @@ Changelog
 2.5.2 (unreleased)
 ------------------
 
+- Use the right content type for SVG images (`#36
+  <https://github.com/mgedmin/restview/issues/36>`_).
+
 
 2.5.1 (2015-11-17)
 ------------------
