@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.5.2 (unreleased)
+2.5.2 (2015-11-20)
 ------------------
 
 - Use the right content type for SVG images (`#36
