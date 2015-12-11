@@ -6,5 +6,5 @@ include Makefile
 include *.rst
 include tox.ini
 include .coveragerc
-include .travis.yml
+include *.yml
 include .gitignore

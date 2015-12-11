@@ -2,7 +2,7 @@
 restview
 ========
 
-|buildstatus|_ |coverage|_
+|buildstatus|_ |appveyor|_ |coverage|_
 
 A viewer for ReStructuredText documents that renders them on the fly.
 
@@ -64,6 +64,9 @@ On .rpm based systems (e.g. Fedora) ::
 
 .. |buildstatus| image:: https://api.travis-ci.org/mgedmin/restview.svg?branch=master
 .. _buildstatus: https://travis-ci.org/mgedmin/restview
+
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/mgedmin/restview?branch=master&svg=true
+.. _appveyor: https://ci.appveyor.com/project/mgedmin/restview
 
 .. |coverage| image:: https://coveralls.io/repos/mgedmin/restview/badge.svg?branch=master
 .. _coverage: https://coveralls.io/r/mgedmin/restview
