@@ -383,6 +383,11 @@ pre.error {
     color: red;
     background: #fff8f8;
 }
+pre > .highlight {
+    display: block;
+    color: red;
+    background: #fff8f8;
+}
 </style>
 </head>
 <body>
@@ -474,7 +479,8 @@ class RestViewer(object):
                                          source_path=filename,
                                          settings_overrides=settings_overrides)
         except Exception as e:
-            html = self.render_exception(e.__class__.__name__, str(e), rest_input, mtime=mtime)
+            line = self.extract_line_info(e, filename)
+            html = self.render_exception(e.__class__.__name__, str(e), rest_input, mtime=mtime, line=line)
         else:
             if self.pypi_strict:
                 writer.body = [readme.rst.clean(''.join(writer.body))]
@@ -482,14 +488,42 @@ class RestViewer(object):
             html = writer.output
         return self.inject_ajax(html, mtime=mtime)
 
-    def render_exception(self, title, error, source, mtime=None):
+    @staticmethod
+    def extract_line_info(exception, source_path):
+        # Docutils constructs a nice system_message object that has
+        # attributes like 'source' and 'line', but then it flattens
+        # that out into a string passed to the exception constructor.
+        msg = str(exception)
+        source_path = str(source_path)  # handle None like docutils
+        if msg.startswith(source_path + ':'):
+            lineno = msg[len(source_path) + 1:].partition(':')[0]
+            if lineno.isdigit():
+                return int(lineno)
+        return None
+
+    @staticmethod
+    def highlight_line(source, lineno):
+        source = escape(source)
+        if not lineno:
+            return source
+        lines = source.splitlines(True)
+        if not 1 <= lineno <= len(lines):
+            return source
+        idx = lineno - 1
+        return ''.join(
+            lines[:idx] +
+            ['<span class="highlight">%s</span>' % lines[idx]] +
+            lines[idx + 1:]
+        )
+
+    def render_exception(self, title, error, source, line=None, mtime=None):
         # NB: source is a bytestring (see issue #16 for the reason)
         # UTF-8 is not necessarily the right thing to use here, but
         # garbage is better than a crash, right?
         source = source.decode('UTF-8', 'replace')
         html = (ERROR_TEMPLATE.replace('$title', escape(title))
                               .replace('$error', escape(error))
-                              .replace('$source', escape(source)))
+                              .replace('$source', self.highlight_line(source, line)))
         return self.inject_ajax(html, mtime=mtime)
 
     def inject_ajax(self, markup, mtime=None):

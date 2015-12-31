@@ -7,6 +7,10 @@ Changelog
 - Implement ``restview --version`` (`#37
   <https://github.com/mgedmin/restview/issues/37>`_).
 
+- Highlight the bad source line when rendering fails completely due to an
+  error, e.g. in ``--strict`` mode (`#40
+  <https://github.com/mgedmin/restview/issues/40>`_).
+
 
 2.5.2 (2015-11-20)
 ------------------

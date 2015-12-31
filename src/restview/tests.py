@@ -11,6 +11,7 @@ except ImportError:
     from io import StringIO
 
 from mock import Mock, patch
+import docutils.utils
 
 from restview.restviewhttp import (MyRequestHandler, RestViewer,
                                    get_host_name, launch_browser, main)
@@ -786,6 +787,91 @@ class TestRestViewer(unittest.TestCase):
         viewer.server = Mock()
         viewer.serve()
         self.assertEqual(viewer.server.serve_forever.call_count, 1)
+
+    def make_error(self, msg, source='file.rst', line=None,
+                   level=docutils.utils.Reporter.ERROR_LEVEL):
+        sm = docutils.nodes.system_message(
+            msg, level=level, type=docutils.utils.Reporter.levels[level],
+            source=source, line=line)
+        return docutils.utils.SystemMessage(sm, level)
+
+    def test_docutils_exception_messages(self):
+        err = self.make_error('dangling participle', 'file.rst', 42)
+        # Let's make sure docutils hasn't changed their error format.
+        self.assertEqual(str(err), 'file.rst:42: (ERROR/3) dangling participle')
+
+    def test_docutils_exception_messages_no_source_path(self):
+        err = self.make_error('dangling participle', None, 42)
+        # Let's make sure docutils hasn't changed their error format.
+        self.assertEqual(str(err), 'None:42: (ERROR/3) dangling participle')
+
+    def test_extract_line_info(self):
+        eli = RestViewer.extract_line_info
+        err = self.make_error('dangling participle', 'file.rst', 42)
+        self.assertEqual(eli(err, 'file.rst'), 42)
+
+    def test_extract_line_unknown_file(self):
+        eli = RestViewer.extract_line_info
+        err = self.make_error('dangling participle', None, 42)
+        self.assertEqual(eli(err, None), 42)
+
+    def test_extract_line_info_wrong_file(self):
+        eli = RestViewer.extract_line_info
+        err = self.make_error('dangling participle', 'file.rst', 42)
+        self.assertEqual(eli(err, 'unrelated.rst'), None)
+
+    def test_extract_line_info_other_kind_of_exception(self):
+        eli = RestViewer.extract_line_info
+        err = KeyboardInterrupt()
+        self.assertEqual(eli(err, 'file.rst'), None)
+
+    def test_highlight_line_no_line(self):
+        hl = RestViewer.highlight_line
+        source = 'line <1>\nline <2>\nline <3>\n'
+        self.assertEqual(hl(source, None),
+                         'line &lt;1&gt;\nline &lt;2&gt;\nline &lt;3&gt;\n')
+
+    def test_highlight_line_beyond_eof(self):
+        hl = RestViewer.highlight_line
+        source = 'line <1>\nline <2>\nline <3>\n'
+        self.assertEqual(hl(source, 42),
+                         'line &lt;1&gt;\nline &lt;2&gt;\nline &lt;3&gt;\n')
+
+    def test_highlight_line_before_bof(self):
+        hl = RestViewer.highlight_line
+        source = 'line <1>\nline <2>\nline <3>\n'
+        self.assertEqual(hl(source, 0),
+                         'line &lt;1&gt;\nline &lt;2&gt;\nline &lt;3&gt;\n')
+
+    def test_highlight_line_first(self):
+        hl = RestViewer.highlight_line
+        source = 'line <1>\nline <2>\nline <3>\n'
+        self.assertEqual(
+            hl(source, 1),
+            '<span class="highlight">line &lt;1&gt;\n</span>'
+            'line &lt;2&gt;\n'
+            'line &lt;3&gt;\n'
+        )
+
+    def test_highlight_line_middle(self):
+        hl = RestViewer.highlight_line
+        source = 'line <1>\nline <2>\nline <3>\n'
+        self.assertEqual(
+            hl(source, 2),
+            'line &lt;1&gt;\n'
+            '<span class="highlight">line &lt;2&gt;\n</span>'
+            'line &lt;3&gt;\n'
+        )
+
+    def test_highlight_line_last(self):
+        hl = RestViewer.highlight_line
+        source = 'line <1>\nline <2>\nline <3>\n'
+        self.assertEqual(
+            hl(source, 3),
+            'line &lt;1&gt;\n'
+            'line &lt;2&gt;\n'
+            '<span class="highlight">line &lt;3&gt;\n</span>'
+        )
 
 
 class TestGlobals(unittest.TestCase):
