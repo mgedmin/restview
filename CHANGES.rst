@@ -4,7 +4,8 @@ Changelog
 2.5.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Implement ``restview --version`` (`#37
+  <https://github.com/mgedmin/restview/issues/37>`_).
 
 
 2.5.2 (2015-11-20)

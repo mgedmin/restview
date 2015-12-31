@@ -638,7 +638,7 @@ def main():
     progname = os.path.basename(sys.argv[0])
     parser = optparse.OptionParser("%prog [options] filename-or-directory [...]",
                     description="Serve ReStructuredText files over HTTP.",
-                    prog=progname)
+                    prog=progname, version=__version__)
     parser.add_option('-l', '--listen', metavar='PORT',
                       help='listen on a given port (or interface:port,'
                            ' e.g. *:8080) [default: random port on localhost]',
