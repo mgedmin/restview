@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.5.3 (unreleased)
+2.6.0 (2015-12-31)
 ------------------
 
 - Implement ``restview --version`` (`#37
