@@ -55,7 +55,7 @@ except ImportError:
 
 import docutils.core
 import docutils.writers.html4css1
-import readme.rst
+import readme_renderer.rst as readme_rst
 import pygments
 from pygments import lexers, formatters
 
@@ -467,7 +467,7 @@ class RestViewer(object):
             settings_overrides = {}
         settings_overrides['syntax_highlight'] = 'short'
         if self.pypi_strict:
-            settings_overrides.update(readme.rst.SETTINGS)
+            settings_overrides.update(readme_rst.SETTINGS)
         if self.strict:
             settings_overrides['halt_level'] = 1
 
@@ -483,7 +483,7 @@ class RestViewer(object):
             html = self.render_exception(e.__class__.__name__, str(e), rest_input, mtime=mtime, line=line)
         else:
             if self.pypi_strict:
-                writer.body = [readme.rst.clean(''.join(writer.body))]
+                writer.body = [readme_rst.clean(''.join(writer.body))]
                 writer.output = writer.apply_template()
             html = writer.output
         return self.inject_ajax(html, mtime=mtime)
@@ -533,7 +533,7 @@ class RestViewer(object):
             return markup
 
 
-class SyntaxHighlightingHTMLTranslator(readme.rst.ReadMeHTMLTranslator):
+class SyntaxHighlightingHTMLTranslator(readme_rst.ReadMeHTMLTranslator):
     in_doctest = False
     in_text = False
     in_reference = False
