@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.6.1 (unreleased)
+2.6.1 (2016-01-05)
 ------------------
 
 - The ``readme`` dependency was renamed ``readme_renderer`` (fixes
