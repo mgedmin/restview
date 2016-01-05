@@ -4,7 +4,9 @@ Changelog
 2.6.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- The ``readme`` dependency was renamed ``readme_renderer`` (fixes
+  `#30 <https://github.com/mgedmin/restview/issues/30>`_,
+  `#41 <https://github.com/mgedmin/restview/issues/41>`_).
 
 
 2.6.0 (2015-12-31)
