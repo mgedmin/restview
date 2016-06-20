@@ -925,8 +925,7 @@ class TestMain(unittest.TestCase):
 
     def test_help(self):
         stdout, stderr = self.run_main('--help')
-        self.assertTrue('restview [options] filename-or-directory' in stdout,
-                        stdout)
+        self.assertTrue('restview [options] root' in stdout, stdout)
 
     def test_error_when_no_arguments(self):
         stdout, stderr = self.run_main(rc=2)

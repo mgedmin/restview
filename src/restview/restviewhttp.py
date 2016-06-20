@@ -23,7 +23,7 @@ import re
 import sys
 import time
 import socket
-import optparse
+import argparse
 import threading
 import subprocess
 import webbrowser
@@ -423,6 +423,7 @@ class RestViewer(object):
 
     favicon_path = os.path.join(DATA_PATH, 'favicon.ico')
 
+    halt_level = None
     strict = False
     pypi_strict = False
 
@@ -468,8 +469,12 @@ class RestViewer(object):
         settings_overrides['syntax_highlight'] = 'short'
         if self.pypi_strict:
             settings_overrides.update(readme_rst.SETTINGS)
-        if self.strict:
+        if self.halt_level is not None:
+            settings_overrides['halt_level'] = self.halt_level
+        elif self.strict:
             settings_overrides['halt_level'] = 1
+
+        settings_overrides['report_level'] = 0
 
         if settings:
             settings_overrides.update(settings)
@@ -670,42 +675,56 @@ def launch_browser(url):
 
 def main():
     progname = os.path.basename(sys.argv[0])
-    parser = optparse.OptionParser("%prog [options] filename-or-directory [...]",
+    parser = argparse.ArgumentParser(
+                    usage="%(prog)s [options] root [...]",
                     description="Serve ReStructuredText files over HTTP.",
-                    prog=progname, version=__version__)
-    parser.add_option('-l', '--listen', metavar='PORT',
+                    prog=progname)
+    parser.add_argument('root',
+                      help='filename or directory to serve documents from',
+                      nargs='*')
+    parser.add_argument('--version', action='version', version=__version__)
+    parser.add_argument('-l', '--listen', metavar='PORT',
                       help='listen on a given port (or interface:port,'
                            ' e.g. *:8080) [default: random port on localhost]',
                       default=None)
-    parser.add_option('-b', '--browser',
+    parser.add_argument('-b', '--browser',
                       help='open a web browser [default: only if -l'
                            ' was not specified]',
                       action='store_true', default=None)
-    parser.add_option('-e', '--execute', metavar='COMMAND',
+    parser.add_argument('-e', '--execute', metavar='COMMAND',
                       help='run a command to produce ReStructuredText',
                       default=None)
-    parser.add_option('-w', '--watch', metavar='FILENAME', action='append',
+    parser.add_argument('-w', '--watch', metavar='FILENAME', action='append',
                       help='reload the page when a file changes (use with'
                            ' --execute); can be specified multiple times',
                       default=[])
-    parser.add_option('--long-description',
+    parser.add_argument('--long-description',
                       help='run "python setup.py --long-description" to produce'
                            ' ReStructuredText; also enables --pypi-strict'
                            ' and watches the usual long description sources'
                            ' (setup.py, README.rst, CHANGES.rst)',
                       action='store_true')
-    parser.add_option('--css', metavar='URL|FILENAME',
+    parser.add_argument('--css', metavar='URL|FILENAME',
                       help='use the specified stylesheet; can be specified'
                            ' multiple times [default: %s]'
                            % RestViewer.stylesheets,
                       action='append', dest='stylesheets', default=[])
-    parser.add_option('--strict',
-                      help='halt at the slightest problem',
+    halt_level_group = parser.add_mutually_exclusive_group()
+    halt_level_group.add_argument('--halt-level',
+                      help='''set the "halt_level" option of docutils; restview
+                      will stop processing the document when a system message
+                      at or above this level (1=info, 2=warnings, 3=errors,
+                      4=severe) is logged''',
+                      type=int, default=None)
+    halt_level_group.add_argument('--strict',
+                      help='''halt at the slightest problem; equivalent to
+                      --halt-level=1''',
                       action='store_true', default=False)
-    parser.add_option('--pypi-strict',
+    parser.add_argument('--pypi-strict',
                       help='enable additional restrictions that PyPI performs',
                       action='store_true', default=False)
-    opts, args = parser.parse_args(sys.argv[1:])
+    opts = parser.parse_args(sys.argv[1:])
+    args = opts.root
     if opts.long_description:
         opts.execute = 'python setup.py --long-description'
         opts.watch += ['setup.py', 'README.rst', 'CHANGES.rst']
@@ -724,6 +743,7 @@ def main():
         server = RestViewer(args, watch=opts.watch)
     if opts.stylesheets:
         server.stylesheets = ','.join(opts.stylesheets)
+    server.halt_level = opts.halt_level
     server.strict = opts.strict
     server.pypi_strict = opts.pypi_strict
 
