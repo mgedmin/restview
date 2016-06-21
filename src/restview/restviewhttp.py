@@ -723,7 +723,8 @@ def main():
         action='store_true', default=False)
     parser.add_argument(
         '--pypi-strict',
-        help='enable additional restrictions that PyPI performs',
+        help='enable additional restrictions that PyPI performs;'
+             ' implies --strict',
         action='store_true', default=False)
     opts = parser.parse_args(sys.argv[1:])
     args = opts.root
