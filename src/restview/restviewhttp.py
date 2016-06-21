@@ -680,49 +680,51 @@ def main():
                     description="Serve ReStructuredText files over HTTP.",
                     prog=progname)
     parser.add_argument('root',
-                      help='filename or directory to serve documents from',
-                      nargs='*')
+                        help='filename or directory to serve documents from',
+                        nargs='*')
     parser.add_argument('--version', action='version', version=__version__)
     parser.add_argument('-l', '--listen', metavar='PORT',
-                      help='listen on a given port (or interface:port,'
-                           ' e.g. *:8080) [default: random port on localhost]',
-                      default=None)
+                        help='listen on a given port (or interface:port,'
+                             ' e.g. *:8080) [default: random port on localhost]',
+                        default=None)
     parser.add_argument('-b', '--browser',
-                      help='open a web browser [default: only if -l'
-                           ' was not specified]',
-                      action='store_true', default=None)
+                        help='open a web browser [default: only if -l'
+                             ' was not specified]',
+                        action='store_true', default=None)
     parser.add_argument('-e', '--execute', metavar='COMMAND',
-                      help='run a command to produce ReStructuredText',
-                      default=None)
+                        help='run a command to produce ReStructuredText',
+                        default=None)
     parser.add_argument('-w', '--watch', metavar='FILENAME', action='append',
-                      help='reload the page when a file changes (use with'
-                           ' --execute); can be specified multiple times',
-                      default=[])
+                        help='reload the page when a file changes (use with'
+                             ' --execute); can be specified multiple times',
+                        default=[])
     parser.add_argument('--long-description',
-                      help='run "python setup.py --long-description" to produce'
-                           ' ReStructuredText; also enables --pypi-strict'
-                           ' and watches the usual long description sources'
-                           ' (setup.py, README.rst, CHANGES.rst)',
-                      action='store_true')
+                        help='run "python setup.py --long-description" to produce'
+                             ' ReStructuredText; also enables --pypi-strict'
+                             ' and watches the usual long description sources'
+                             ' (setup.py, README.rst, CHANGES.rst)',
+                        action='store_true')
     parser.add_argument('--css', metavar='URL|FILENAME',
-                      help='use the specified stylesheet; can be specified'
-                           ' multiple times [default: %s]'
-                           % RestViewer.stylesheets,
-                      action='append', dest='stylesheets', default=[])
+                        help='use the specified stylesheet; can be specified'
+                             ' multiple times [default: %s]'
+                             % RestViewer.stylesheets,
+                        action='append', dest='stylesheets', default=[])
     halt_level_group = parser.add_mutually_exclusive_group()
-    halt_level_group.add_argument('--halt-level',
-                      help='''set the "halt_level" option of docutils; restview
-                      will stop processing the document when a system message
-                      at or above this level (1=info, 2=warnings, 3=errors,
-                      4=severe) is logged''',
-                      type=int, default=None)
-    halt_level_group.add_argument('--strict',
-                      help='''halt at the slightest problem; equivalent to
-                      --halt-level=1''',
-                      action='store_true', default=False)
-    parser.add_argument('--pypi-strict',
-                      help='enable additional restrictions that PyPI performs',
-                      action='store_true', default=False)
+    halt_level_group.add_argument(
+        '--halt-level',
+        help='''set the "halt_level" option of docutils; restview
+            will stop processing the document when a system message
+            at or above this level (1=info, 2=warnings, 3=errors,
+            4=severe) is logged''',
+        type=int, default=None)
+    halt_level_group.add_argument(
+        '--strict',
+        help='halt at the slightest problem; equivalent to --halt-level=1',
+        action='store_true', default=False)
+    parser.add_argument(
+        '--pypi-strict',
+        help='enable additional restrictions that PyPI performs',
+        action='store_true', default=False)
     opts = parser.parse_args(sys.argv[1:])
     args = opts.root
     if opts.long_description:
@@ -768,4 +770,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
