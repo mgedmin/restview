@@ -48,15 +48,20 @@ class MyRequestHandlerForTests(MyRequestHandler):
             unicode('HTML for %s with AJAX poller for %s' % (data, mtime))
         self.server.renderer.render_exception = lambda title, error, source, mtime=None: \
             unicode('HTML for error %s: %s: %s' % (title, error, source))
+
     def send_response(self, status):
         self.status = status
+
     def send_header(self, header, value):
         self._headers[header] = value
+
     def end_headers(self):
         self.headers = self._headers
+
     def send_error(self, status, body):
         self.status = status
         self.error_body = body
+
     def log_error(self, message, *args):
         if args:
             message = message % args
@@ -243,8 +248,10 @@ class TestMyRequestHandler(unittest.TestCase):
         stat = {filename: [Mock(st_mtime=123456)]}
         with patch('os.stat', lambda fn: stat[fn].pop(0)):
             handler.handle_polling([filename], 123455)
-        self.assertEqual(handler.log,
-             ['connection reset by peer (client closed "/polling?pathname=__init__.py&mtime=123455" before acknowledgement)'])
+        self.assertEqual(
+            handler.log,
+            ['connection reset by peer'
+             ' (client closed "%s" before acknowledgement)' % handler.path])
 
     def test_handle_polling_handles_disappearing_files(self):
         handler = MyRequestHandlerForTests()
@@ -343,7 +350,7 @@ class TestMyRequestHandler(unittest.TestCase):
         self.assertEqual(handler.error_body,
                          "File not found: /nosuchfile.txt")
         self.assertEqual(handler.log,
-             ["[Errno 2] No such file or directory: 'nosuchfile.txt'"])
+                         ["[Errno 2] No such file or directory: 'nosuchfile.txt'"])
 
     def test_handle_command(self):
         handler = MyRequestHandlerForTests()
@@ -423,9 +430,9 @@ class TestMyRequestHandler(unittest.TestCase):
         handler = MyRequestHandlerForTests()
         handler.collect_files = lambda dir: ['a.txt', 'b/c.txt']
         handler.render_dir_listing = lambda title, files: \
-                unicode("<title>%s</title>\n%s" % (
-                    title,
-                    '\n'.join('%s - %s' % (path, fn) for path, fn in files)))
+            unicode("<title>%s</title>\n%s" % (
+                title,
+                '\n'.join('%s - %s' % (path, fn) for path, fn in files)))
         body = handler.handle_dir('/path/to/dir')
         self.assertEqual(handler.status, 200)
         self.assertEqual(handler.headers['Content-Type'],
@@ -442,9 +449,9 @@ class TestMyRequestHandler(unittest.TestCase):
         handler = MyRequestHandlerForTests()
         handler.collect_files = lambda dir: ['a.txt', os.path.join('b', 'c.txt')]
         handler.render_dir_listing = lambda title, files: \
-                unicode("<title>%s</title>\n%s" % (
-                    title,
-                    '\n'.join('%s - %s' % (path, fn) for path, fn in files)))
+            unicode("<title>%s</title>\n%s" % (
+                title,
+                '\n'.join('%s - %s' % (path, fn) for path, fn in files)))
         with patch('os.path.isdir', lambda fn: fn == 'subdir'):
             body = handler.handle_list([os.path.normpath('/path/to/file.txt'),
                                         'subdir'])
@@ -457,8 +464,7 @@ class TestMyRequestHandler(unittest.TestCase):
                          b"<title>RST files</title>\n"
                          b"0/file.txt - #path#to#file.txt\n"
                          b"1/a.txt - subdir#a.txt\n"
-                         b"1/b/c.txt - subdir#b#c.txt"
-                            .replace(b"#", os.path.sep.encode()))
+                         b"1/b/c.txt - subdir#b#c.txt".replace(b"#", os.path.sep.encode()))
 
 
 def doctest_MyRequestHandler_render_dir_listing():
@@ -936,15 +942,15 @@ class TestMain(unittest.TestCase):
     def test_error_when_no_arguments(self):
         stdout, stderr = self.run_main(rc=2)
         self.assertEqual(stderr.splitlines()[-1],
-             'restview: error: at least one argument expected')
+                         'restview: error: at least one argument expected')
 
     def test_error_when_both_command_and_file_specified(self):
         stdout, stderr = self.run_main('-e', 'cat README.rst', 'CHANGES.rst',
                                        rc=2)
-        self.assertEqual(stderr.splitlines()[-1],
-             'restview: error: specify a command (-e) or a file/directory,'
-             ' but not both',
-             stderr)
+        self.assertEqual(
+            stderr.splitlines()[-1],
+            'restview: error: specify a command (-e) or a file/directory, but not both',
+            stderr)
 
     def test_all_is_well(self):
         self.run_main('.', serve_called=True, browser_launched=True)
@@ -961,12 +967,12 @@ class TestMain(unittest.TestCase):
         with patch.object(RestViewer, 'listen'):
             with patch.object(RestViewer, 'close'):
                 self.run_main('-l', '0.0.0.0:8080', '.',
-                            serve_called=True, browser_launched=False)
+                              serve_called=True, browser_launched=False)
 
     def test_specify_invalid_listen_address(self):
         stdout, stderr = self.run_main('-l', 'nonsense', '.', rc=2)
         self.assertEqual(stderr.splitlines()[-1],
-             'restview: error: Invalid address: nonsense')
+                         'restview: error: Invalid address: nonsense')
 
     def test_custom_css_url(self):
         self.run_main('.', '--css', 'http://example.com/my.css',
