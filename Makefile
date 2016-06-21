@@ -28,6 +28,10 @@ check:
 coverage:
 	tox -e coverage
 
+.PHONY: diff-cover
+diff-cover: coverage
+	diff-cover coverage.xml
+
 .PHONY: dist
 dist:
 	$(PYTHON) setup.py -q sdist bdist_wheel
