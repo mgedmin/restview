@@ -14,3 +14,4 @@ man/
 .venv/
 bin
 .cache/
+coverage.xml

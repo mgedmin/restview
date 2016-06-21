@@ -788,6 +788,12 @@ class TestRestViewer(unittest.TestCase):
         viewer.serve()
         self.assertEqual(viewer.server.serve_forever.call_count, 1)
 
+    def test_rest_to_html_halt_level(self):
+        viewer = RestViewer('.')
+        viewer.halt_level = 2
+        html = viewer.rest_to_html(b'`Hello')
+        self.assertIn('<title>SystemMessage</title>', html)
+
     def make_error(self, msg, source='file.rst', line=None,
                    level=docutils.utils.Reporter.ERROR_LEVEL):
         sm = docutils.nodes.system_message(
