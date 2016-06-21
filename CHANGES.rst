@@ -1,10 +1,12 @@
 Changelog
 =========
 
-2.6.2 (unreleased)
+2.7.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- New option ``--halt-level`` (`#44
+  <https://github.com/mgedmin/restview/pull/44>`_), contributed by Kunshan
+  Wang.
 
 
 2.6.1 (2016-01-05)
