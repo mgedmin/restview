@@ -288,7 +288,7 @@ Changelog
 1.0.1 (2008-07-26)
 ------------------
 
-- New option: --css.  Accepts a filename or a HTTP/HTTPS URL.
+- New option: --css.  Accepts a filename or an HTTP/HTTPS URL.
 
 
 1.0.0 (2008-07-26)
