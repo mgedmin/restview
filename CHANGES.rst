@@ -8,6 +8,9 @@ Changelog
   <https://github.com/mgedmin/restview/pull/44>`_), contributed by Kunshan
   Wang.
 
+- New option ``-B``/``--no-browser`` (`#46
+  <https://github.com/mgedmin/restview/issues/46>`_).
+
 
 2.6.1 (2016-01-05)
 ------------------
