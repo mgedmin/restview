@@ -4,7 +4,7 @@ Changelog
 2.7.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Claim Python 3.6 support.
 
 
 2.7.0 (2016-09-15)
