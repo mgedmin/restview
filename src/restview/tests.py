@@ -577,7 +577,7 @@ def doctest_RestViewer_rest_to_html_css_url():
         <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         ...
-        <title></title>
+        <title>...</title>
         <link rel="stylesheet" href="http://example.com/my.css" type="text/css" />
         <style type="text/css">
         ...
