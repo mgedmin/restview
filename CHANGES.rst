@@ -6,6 +6,8 @@ Changelog
 
 - Claim Python 3.6 support.
 
+- Drop Python 3.3 support.
+
 
 2.7.0 (2016-09-15)
 ------------------
