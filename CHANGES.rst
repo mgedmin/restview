@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.8.0 (unreleased)
+2.8.0 (2017-12-07)
 ------------------
 
 - Claim Python 3.6 support.

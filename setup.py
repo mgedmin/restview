@@ -48,6 +48,7 @@ setup(
         'Topic :: Software Development :: Documentation',
         'Topic :: Text Processing :: Markup',
     ],
+    keywords='rst restructuredtext preview',
 
     packages=['restview'],
     package_dir={'': 'src'},

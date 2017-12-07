@@ -8,3 +8,4 @@ include tox.ini
 include .coveragerc
 include *.yml
 include .gitignore
+include LICENSE
