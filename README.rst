@@ -27,13 +27,15 @@ Synopsis
 Usage: ``restview [options] filename-or-directory [...]``
 
 -h, --help            show this help message and exit
+--version             show program's version number and exit
 -l PORT, --listen=PORT
                       listen on a given port (or interface:port, e.g.
                       \*:8080) [default: random port on localhost]
 -b, --browser         open a web browser [default: only if -l was not
                       specified]
+-B, --no-browser      don't open a web browser
 -e COMMAND, --execute=COMMAND
-                      run a command to produce ReStructuredText
+                      run a command to produce ReStructuredText on stdout
 -w FILENAME, --watch=FILENAME
                       reload the page when a file changes (use with
                       --execute); can be specified multiple times
@@ -44,8 +46,19 @@ Usage: ``restview [options] filename-or-directory [...]``
 --css=URL-or-FILENAME
                       use the specified stylesheet; can be specified multiple
                       times [default: html4css1.css,restview.css]
---strict              halt at the slightest problem
+--report-level REPORT_LEVEL
+                      set the "report_level" option of docutils; restview
+                      will report system messages at or above this level
+                      (1=info, 2=warnings, 3=errors, 4=severe)
+--halt-level HALT_LEVEL
+                      set the "halt_level" option of docutils; restview will
+                      stop processing the document when a system message at
+                      or above this level (1=info, 2=warnings, 3=errors,
+                      4=severe) is logged
+--strict              halt at the slightest problem; equivalent to --halt-
+                      level=2
 --pypi-strict         enable additional restrictions that PyPI performs
+
 
 Installation
 ============
