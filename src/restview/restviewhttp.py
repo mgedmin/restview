@@ -423,8 +423,8 @@ class RestViewer(object):
 
     favicon_path = os.path.join(DATA_PATH, 'favicon.ico')
 
+    report_level = None
     halt_level = None
-    strict = False
     pypi_strict = False
 
     def __init__(self, root, command=None, watch=None):
@@ -471,12 +471,10 @@ class RestViewer(object):
             settings_overrides.update(readme_rst.SETTINGS)
         if self.halt_level is not None:
             settings_overrides['halt_level'] = self.halt_level
-        elif self.strict:
-            settings_overrides['halt_level'] = 1
+        if self.report_level is not None:
+            settings_overrides['report_level'] = self.report_level
 
-        settings_overrides['report_level'] = 0
-
-        if settings:
+        if settings:  # hook for unit tests
             settings_overrides.update(settings)
 
         try:
@@ -712,6 +710,12 @@ def main():
                              ' multiple times [default: %s]'
                              % RestViewer.stylesheets,
                         action='append', dest='stylesheets', default=[])
+    parser.add_argument(
+        '--report-level',
+        help='''set the "report_level" option of docutils; restview
+            will report system messages at or above this level (1=info,
+            2=warnings, 3=errors, 4=severe)''',
+        type=int, default=2)
     halt_level_group = parser.add_mutually_exclusive_group()
     halt_level_group.add_argument(
         '--halt-level',
@@ -722,12 +726,11 @@ def main():
         type=int, default=None)
     halt_level_group.add_argument(
         '--strict',
-        help='halt at the slightest problem; equivalent to --halt-level=1',
-        action='store_true', default=False)
+        help='halt at the slightest problem; equivalent to --halt-level=2',
+        action='store_const', dest='halt_level', const=2)
     parser.add_argument(
         '--pypi-strict',
-        help='enable additional restrictions that PyPI performs;'
-             ' implies --strict',
+        help='enable additional restrictions that PyPI performs',
         action='store_true', default=False)
     opts = parser.parse_args(sys.argv[1:])
     args = opts.root
@@ -749,8 +752,8 @@ def main():
         server = RestViewer(args, watch=opts.watch)
     if opts.stylesheets:
         server.stylesheets = ','.join(opts.stylesheets)
+    server.report_level = opts.report_level
     server.halt_level = opts.halt_level
-    server.strict = opts.strict
     server.pypi_strict = opts.pypi_strict
 
     if opts.listen:

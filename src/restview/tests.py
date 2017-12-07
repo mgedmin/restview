@@ -603,7 +603,7 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
 
         >>> viewer = RestViewer('.')
         >>> viewer.stylesheets = None
-        >>> viewer.strict = True
+        >>> viewer.halt_level = 2
         >>> print(viewer.rest_to_html(b'''
         ... Some text with an `error
         ... ''', mtime=1364808683).strip())
@@ -799,6 +799,12 @@ class TestRestViewer(unittest.TestCase):
         viewer.halt_level = 2
         html = viewer.rest_to_html(b'`Hello')
         self.assertIn('<title>SystemMessage</title>', html)
+
+    def test_rest_to_html_report_level(self):
+        viewer = RestViewer('.')
+        viewer.report_level = 1
+        html = viewer.rest_to_html(b'.. _unused:\n\nEtc.')
+        self.assertIn('System Message: INFO/1', html)
 
     def make_error(self, msg, source='file.rst', line=None,
                    level=docutils.utils.Reporter.ERROR_LEVEL):

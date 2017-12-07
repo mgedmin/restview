@@ -1,12 +1,18 @@
 Changelog
 =========
 
-2.7.1 (unreleased)
+2.8.0 (unreleased)
 ------------------
 
 - Claim Python 3.6 support.
 
 - Drop Python 3.3 support.
+
+- New option ``--report-level`` that defaults to 2 (previously this was
+  hardcoded to 0).  See `#49 <https://github.com/mgedmin/restview/issues/49>`_.
+
+- Relax ``--strict`` to mean ``--halt-level=2`` (previously it meant
+  ``--halt-level=1``).  See `#49`_.
 
 
 2.7.0 (2016-09-15)
