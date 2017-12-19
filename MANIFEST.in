@@ -9,3 +9,6 @@ include .coveragerc
 include *.yml
 include .gitignore
 include LICENSE
+
+# added by check_manifest.py
+include *.mk
