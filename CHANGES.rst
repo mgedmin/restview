@@ -4,7 +4,8 @@ Changelog
 2.8.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Protect against DNS rebinding attacks.  See `#51
+  <https://github.com/mgedmin/restview/issues/51>`_.
 
 
 2.8.0 (2017-12-07)
