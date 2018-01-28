@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.8.1 (unreleased)
+2.8.1 (2018-01-28)
 ------------------
 
 - Protect against DNS rebinding attacks.  See `#51
