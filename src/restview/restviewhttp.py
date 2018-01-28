@@ -18,14 +18,15 @@ Needs docutils and a web browser. Will syntax-highlight code or doctest blocks
 """
 from __future__ import print_function
 
+import argparse
+import fnmatch
 import os
 import re
-import sys
-import time
 import socket
-import argparse
-import threading
 import subprocess
+import sys
+import threading
+import time
 import webbrowser
 
 try:
@@ -88,6 +89,14 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.do_GET_or_HEAD()
 
     def do_GET_or_HEAD(self):
+        host = self.headers.get('Host', '').split(':', 1)[0]
+        if not any(fnmatch.fnmatch(host, pat)
+                   for pat in self.server.renderer.allowed_hosts):
+            # Protect against DNS rebinding attacks
+            # (https://en.wikipedia.org/wiki/DNS_rebinding)
+            self.log_error("Rejecting unknown Host header: %r", host)
+            self.send_error(400, "Host header not in allowed list")
+            return
         self.path = unquote(self.path)
         if '..' in self.path:
             self.send_error(400, "Bad request") # no hacking!
@@ -414,6 +423,7 @@ class RestViewer(object):
     handler_class = MyRequestHandler
 
     local_address = ('localhost', 0)
+    allowed_hosts = ['localhost', '127.0.0.1']
 
     # Comma-separated list of URLs, full filenames, or filenames in the
     # default search path (if you want to refer to docutils default
@@ -685,6 +695,11 @@ def main():
                         help='listen on a given port (or interface:port,'
                              ' e.g. *:8080) [default: random port on localhost]',
                         default=None)
+    parser.add_argument('--allowed-hosts', metavar='HOSTS',
+                        help='allowed values for the Host header (default:'
+                             ' localhost only, unless you specify -l *:port,'
+                             ' in which case any Host: is accepted by default)',
+                        default=None)
     parser.add_argument('-b', '--browser',
                         help='open a web browser [default: only if -l'
                              ' was not specified]',
@@ -761,6 +776,10 @@ def main():
             server.local_address = parse_address(opts.listen)
         except ValueError as e:
             parser.error(str(e))
+    if opts.allowed_hosts:
+        server.allowed_hosts = opts.allowed_hosts.replace(',', ' ').split()
+    elif server.local_address[0] in ('*', '0', '0.0.0.0'):
+        server.allowed_hosts = ['*']
     host = get_host_name(server.local_address[0])
     port = server.listen()
     try:

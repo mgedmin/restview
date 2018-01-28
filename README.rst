@@ -31,6 +31,10 @@ Usage: ``restview [options] filename-or-directory [...]``
 -l PORT, --listen=PORT
                       listen on a given port (or interface:port, e.g.
                       \*:8080) [default: random port on localhost]
+--allowed-hosts HOSTS
+                      allowed values for the Host header (default: localhost
+                      only, unless you specify -l \*:port, in which case any
+                      Host: is accepted by default)
 -b, --browser         open a web browser [default: only if -l was not
                       specified]
 -B, --no-browser      don't open a web browser

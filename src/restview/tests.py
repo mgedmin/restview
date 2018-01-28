@@ -39,11 +39,13 @@ class PopenStub(object):
 
 class MyRequestHandlerForTests(MyRequestHandler):
     def __init__(self):
-        self._headers = {}
+        self.headers = {'Host': 'localhost'}  # request headers
+        self._headers = {}  # response headers
         self.log = []
         self.server = Mock()
         self.server.renderer.command = None
         self.server.renderer.watch = None
+        self.server.renderer.allowed_hosts = ['localhost']
         self.server.renderer.rest_to_html = lambda data, mtime=None, filename=None: \
             unicode('HTML for %s with AJAX poller for %s' % (data, mtime))
         self.server.renderer.render_exception = lambda title, error, source, mtime=None: \
@@ -195,6 +197,15 @@ class TestMyRequestHandler(unittest.TestCase):
         handler.do_GET_or_HEAD()
         self.assertEqual(handler.status, 400)
         self.assertEqual(handler.error_body, "Bad request")
+
+    def test_do_GET_or_HEAD_prevent_dns_rebinding(self):
+        handler = MyRequestHandlerForTests()
+        handler.headers['Host'] = 'mallory.example.com:80'
+        handler.path = '/'
+        handler.server.renderer.root = self.filepath('a.txt')
+        handler.do_GET_or_HEAD()
+        self.assertEqual(handler.status, 400)
+        self.assertEqual(handler.error_body, "Host header not in allowed list")
 
     def test_do_GET_or_HEAD_images(self):
         for filename, ctype in [('a.png', 'image/png'),
@@ -980,6 +991,12 @@ class TestMain(unittest.TestCase):
         self.assertEqual(stderr.splitlines()[-1],
                          'restview: error: Invalid address: nonsense')
 
+    def test_specify_allowed_hosts(self):
+        with patch.object(RestViewer, 'listen'):
+            with patch.object(RestViewer, 'close'):
+                self.run_main('--allowed-hosts', 'localhost,example.com', '.',
+                              serve_called=True, browser_launched=False)
+
     def test_custom_css_url(self):
         self.run_main('.', '--css', 'http://example.com/my.css',
                       serve_called=True, browser_launched=True)
@@ -991,10 +1008,7 @@ class TestMain(unittest.TestCase):
 
 def test_suite():
     return unittest.TestSuite([
-        unittest.makeSuite(TestMyRequestHandler),
-        unittest.makeSuite(TestRestViewer),
-        unittest.makeSuite(TestGlobals),
-        unittest.makeSuite(TestMain),
+        unittest.defaultTestLoader.loadTestsFromName(__name__),
         doctest.DocTestSuite(optionflags=doctest.ELLIPSIS | doctest.REPORT_NDIFF),
         doctest.DocTestSuite('restview.restviewhttp'),
     ])
