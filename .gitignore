@@ -15,3 +15,4 @@ man/
 bin
 .cache/
 coverage.xml
+.pytest_cache/
