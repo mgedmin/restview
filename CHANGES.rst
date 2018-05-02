@@ -4,7 +4,8 @@ Changelog
 2.8.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added ``__main__.py`` module to allow package to be executable with
+  ``python -m restview``. - SimplyKnownAsG
 
 
 2.8.1 (2018-01-28)
