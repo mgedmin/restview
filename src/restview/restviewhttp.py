@@ -1,20 +1,5 @@
-#!/usr/bin/python
 """
 HTTP-based ReStructuredText viewer.
-
-Usage:
-    restview [options] filename.rst [...]
-or
-    restview [options] directory [...]
-or
-    restview [options] -e "command" [--watch filename] [...]
-or
-    restview [options] --long-description
-or
-    restview --help
-
-Needs docutils and a web browser. Will syntax-highlight code or doctest blocks
-(needs pygments).
 """
 from __future__ import print_function
 
@@ -682,11 +667,10 @@ def launch_browser(url):
 
 
 def main():
-    progname = os.path.basename(sys.argv[0])
     parser = argparse.ArgumentParser(
                     usage="%(prog)s [options] root [...]",
                     description="Serve ReStructuredText files over HTTP.",
-                    prog=progname)
+                    prog="restview")
     parser.add_argument('root',
                         help='filename or directory to serve documents from',
                         nargs='*')
@@ -792,7 +776,3 @@ def main():
         pass
     finally:
         server.close()
-
-
-if __name__ == '__main__':
-    main()
