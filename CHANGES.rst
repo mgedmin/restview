@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.8.2 (unreleased)
+2.9.0 (2018-05-03)
 ------------------
 
 - Added ``__main__.py`` module to allow package to be executable with

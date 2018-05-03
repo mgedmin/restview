@@ -18,7 +18,7 @@ test: bin/py.test bin/restview
 
 .PHONY: check
 check:
-	detox
+	tox
 
 .PHONY: coverage
 coverage:

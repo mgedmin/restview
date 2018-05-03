@@ -25,6 +25,9 @@ setup(
     author='Marius Gedminas',
     author_email='marius@gedmin.as',
     url='https://mg.pov.lt/restview/',
+    project_urls={
+        'Source': 'https://github.com/mgedmin/restview',
+    },
     description='ReStructuredText viewer',
     long_description=read('README.rst') + '\n\n' + read('CHANGES.rst'),
     license='GPL',
