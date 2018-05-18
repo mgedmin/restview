@@ -478,13 +478,18 @@ class RestViewer(object):
             docutils.core.publish_string(rest_input, writer=writer,
                                          source_path=filename,
                                          settings_overrides=settings_overrides)
+            if self.pypi_strict:
+                clean_body = readme_rst.clean(''.join(writer.body))
+                if clean_body is None:
+                    # Unfortunately the real error was caught and discared,
+                    # without even logging :/
+                    raise ValueError("Output cleaning failed")
+                writer.body = [clean_body]
+                writer.output = writer.apply_template()
         except Exception as e:
             line = self.extract_line_info(e, filename)
             html = self.render_exception(e.__class__.__name__, str(e), rest_input, mtime=mtime, line=line)
         else:
-            if self.pypi_strict:
-                writer.body = [readme_rst.clean(''.join(writer.body))]
-                writer.output = writer.apply_template()
             html = writer.output
         return self.inject_ajax(html, mtime=mtime)
 

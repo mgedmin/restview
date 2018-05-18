@@ -754,6 +754,42 @@ def doctest_RestViewer_rest_to_html_pypi_strict():
     """
 
 
+def doctest_RestViewer_rest_to_html_pypi_strict_clean_failure():
+    """Test for RestViewer.rest_to_html in --pypi-strict mode
+
+        >>> viewer = RestViewer('.')
+        >>> viewer.stylesheets = None
+        >>> viewer.pypi_strict = True
+        >>> print(viewer.rest_to_html(b'''
+        ... [http://localhost:3000](http://localhost:3000)
+        ... ''').strip())
+        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <title>ValueError</title>
+        <style type="text/css">
+        pre.error {
+            ...
+        }
+        </style>
+        </head>
+        <body>
+        <h1>ValueError</h1>
+        <pre class="error">
+        Output cleaning failed
+        </pre>
+        <pre>
+        <BLANKLINE>
+        [http://localhost:3000](http://localhost:3000)
+        <BLANKLINE>
+        </pre>
+        </body>
+        </html>
+
+    """
+
+
 def doctest_RestViewer_inject_ajax():
     """Test for RestViewer.inject_ajax
 

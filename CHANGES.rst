@@ -8,6 +8,8 @@ Changelog
   (like warnings printed by setup.py --long-description).
   Fixes `#55 <https://github.com/mgedmin/restview/issues/55>`_.
 
+- Cope with readme_renderer.clean.clean() returning None on failure.
+
 
 2.9.0 (2018-05-03)
 ------------------
