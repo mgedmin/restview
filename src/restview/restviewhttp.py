@@ -205,7 +205,9 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             stdout, stderr = p.communicate()
             if p.returncode != 0:
                 self.log_error("'%s' terminated with %s", command, p.returncode)
-            if stderr or not stdout:
+            if stderr:
+                self.log_error("stderr from '%s':\n%s", command, stderr)
+            if not stdout:
                 return self.handle_error(command, p.returncode, stderr, mtime=mtime)
             else:
                 return self.handle_rest_data(stdout, mtime=mtime)

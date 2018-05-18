@@ -4,7 +4,9 @@ Changelog
 2.9.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Ignore stderr from external commands that successfully produce stdout
+  (like warnings printed by setup.py --long-description).
+  Fixes `#55 <https://github.com/mgedmin/restview/issues/55>`_.
 
 
 2.9.0 (2018-05-03)

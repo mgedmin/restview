@@ -393,6 +393,21 @@ class TestMyRequestHandler(unittest.TestCase):
         self.assertTrue(b'cat: README.rst: no such file' in body,
                         body)
 
+    def test_handle_command_with_warnings(self):
+        handler = MyRequestHandlerForTests()
+        with patch('subprocess.Popen', PopenStub('hello', 'warning: blah blah', 0)):
+            body = handler.handle_command('python setup.py --long-description')
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(handler.headers['Content-Type'],
+                         "text/html; charset=UTF-8")
+        self.assertEqual(handler.headers['Content-Length'],
+                         str(len(body)))
+        self.assertEqual(handler.headers['Cache-Control'],
+                         "no-cache, no-store, max-age=0")
+        self.assertFalse('X-Restview-Mtime' in handler.headers)
+        self.assertTrue(b'hello' in body, body)
+        self.assertTrue(b'blah blah' not in body, body)
+
     def test_handle_command_returns_error_with_watch_files(self):
         handler = MyRequestHandlerForTests()
         with patch('subprocess.Popen', PopenStub('', 'cat: README.rst: no such file', 1)):
