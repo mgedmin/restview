@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.9.1 (unreleased)
+2.9.1 (2018-05-18)
 ------------------
 
 - Ignore stderr from external commands that successfully produce stdout
