@@ -4,7 +4,7 @@ Changelog
 2.9.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Claim Python 3.7 support.
 
 
 2.9.1 (2018-05-18)
