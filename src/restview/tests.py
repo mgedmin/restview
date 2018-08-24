@@ -754,42 +754,6 @@ def doctest_RestViewer_rest_to_html_pypi_strict():
     """
 
 
-def doctest_RestViewer_rest_to_html_pypi_strict_clean_failure():
-    """Test for RestViewer.rest_to_html in --pypi-strict mode
-
-        >>> viewer = RestViewer('.')
-        >>> viewer.stylesheets = None
-        >>> viewer.pypi_strict = True
-        >>> print(viewer.rest_to_html(b'''
-        ... [http://localhost:3000](http://localhost:3000)
-        ... ''').strip())
-        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <title>ValueError</title>
-        <style type="text/css">
-        pre.error {
-            ...
-        }
-        </style>
-        </head>
-        <body>
-        <h1>ValueError</h1>
-        <pre class="error">
-        Output cleaning failed
-        </pre>
-        <pre>
-        <BLANKLINE>
-        [http://localhost:3000](http://localhost:3000)
-        <BLANKLINE>
-        </pre>
-        </body>
-        </html>
-
-    """
-
-
 def doctest_RestViewer_inject_ajax():
     """Test for RestViewer.inject_ajax
 
@@ -867,6 +831,20 @@ class TestRestViewer(unittest.TestCase):
         viewer.report_level = 1
         html = viewer.rest_to_html(b'.. _unused:\n\nEtc.')
         self.assertIn('System Message: INFO/1', html)
+
+    @patch('readme_renderer.rst.clean', Mock(return_value=None))
+    def test_rest_to_html_pypi_strict_clean_failure(self):
+        # Certain versions of readme_renderer could return `None`
+        # from the clean() helper.  New versions don't (or at least
+        # do in different circumstances), so we have to mock out
+        # the helper to keep this test.
+        viewer = RestViewer('.')
+        viewer.pypi_strict = True
+        html = viewer.rest_to_html(b'''
+            [http://localhost:3000](http://localhost:3000)
+        ''')
+        self.assertIn('<title>ValueError</title>', html)
+        self.assertIn('Output cleaning failed', html)
 
     def make_error(self, msg, source='file.rst', line=None,
                    level=docutils.utils.Reporter.ERROR_LEVEL):
