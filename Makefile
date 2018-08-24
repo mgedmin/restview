@@ -29,17 +29,24 @@ diff-cover: coverage
 	diff-cover coverage.xml
 
 
+clean:
+	rm -rf bin .venv
+
+
 include release.mk
 
 
-bin/py.test: bin/pip
+bin/py.test: | bin/pip
 	bin/pip install pytest mock
+	ln -sfr .venv/$@ $@
 
-bin/restview: bin/pip setup.py
+bin/restview: setup.py | bin/pip
 	bin/pip install -e .
+	ln -sfr .venv/$@ $@
 
-bin/pip: .venv/bin/pip
-	ln -sf .venv/bin bin
+bin/pip: | .venv/bin/pip
+	mkdir -p bin
+	ln -sfr .venv/$@ $@
 
 .venv/bin/pip:
 	virtualenv -p $(PYTHON) .venv
