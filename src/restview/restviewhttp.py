@@ -516,9 +516,9 @@ class RestViewer(object):
             return source
         idx = lineno - 1
         return ''.join(
-            lines[:idx] +
-            ['<span class="highlight">%s</span>' % lines[idx]] +
-            lines[idx + 1:]
+            lines[:idx]
+            + ['<span class="highlight">%s</span>' % lines[idx]]
+            + lines[idx + 1:]
         )
 
     def render_exception(self, title, error, source, line=None, mtime=None):
