@@ -6,6 +6,8 @@ Changelog
 
 - Claim Python 3.7 support.
 
+- Drop Python 3.4 support.
+
 
 2.9.1 (2018-05-18)
 ------------------
