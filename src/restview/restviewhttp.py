@@ -52,7 +52,7 @@ except NameError:
     unicode = str
 
 
-__version__ = '2.9.2'
+__version__ = '2.9.3.dev0'
 
 
 # If restview is ever packaged for Debian, this'll likely be changed to
