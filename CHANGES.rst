@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.9.2 (unreleased)
+2.9.2 (2019-04-23)
 ------------------
 
 - Claim Python 3.7 support.
