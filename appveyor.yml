@@ -15,6 +15,7 @@ init:
 install:
   - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - python --version
+  - pip install -U virtualenv  # upgrade pip in tox's virtualenvs
   - pip install tox
 
 build: off
