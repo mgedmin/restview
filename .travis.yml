@@ -8,10 +8,10 @@ python:
     - pypy
     - pypy3
 install:
-    - pip install mock coverage coveralls flake8
-    - pip install .
+    - pip install coverage coveralls flake8 pytest
+    - pip install .[test]
 script:
-    - coverage run --source=src/restview setup.py test -q
+    - coverage run -m pytest
     - flake8 src setup.py
 after_success:
     - coveralls
