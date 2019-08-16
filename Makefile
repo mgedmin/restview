@@ -9,12 +9,12 @@ default: all
 
 
 .PHONY: all
-all: bin/restview bin/py.test
+all: bin/restview bin/pytest
 
 
 .PHONY: test
-test: bin/py.test bin/restview
-	bin/py.test
+test: bin/pytest bin/restview
+	bin/pytest
 
 .PHONY: check
 check:
@@ -36,7 +36,7 @@ clean:
 include release.mk
 
 
-bin/py.test: | bin/pip
+bin/pytest: | bin/pip
 	bin/pip install pytest mock
 	ln -sfr .venv/$@ $@
 
