@@ -12,13 +12,9 @@ default: all
 all: bin/restview bin/pytest
 
 
-.PHONY: test
-test: bin/pytest bin/restview
-	bin/pytest
-
-.PHONY: check
-check:
-	tox
+.PHONY: test check
+test check:
+	tox -p auto
 
 .PHONY: coverage
 coverage:
