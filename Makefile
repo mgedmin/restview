@@ -1,34 +1,28 @@
-PYTHON = python
-
-FILE_WITH_VERSION = src/restview/restviewhttp.py
-FILE_WITH_CHANGELOG = CHANGES.rst
-
-
-.PHONY: default
-default: all
+PYTHON = python3
 
 
 .PHONY: all
-all: bin/restview bin/pytest
+all: bin/restview bin/pytest    ##: build a local virtualenv (default target)
 
 
-.PHONY: test check
-test check:
+.PHONY: test
+test:                           ##: run tests
 	tox -p auto
 
 .PHONY: coverage
-coverage:
+coverage:                       ##: measure test coverage
 	tox -e coverage
 
 .PHONY: diff-cover
-diff-cover: coverage
+diff-cover: coverage            ##: show untested code in this branch
 	diff-cover coverage.xml
 
-
-clean:
+.PHONY: clean
+clean:                          ##: remove build artifacts
 	rm -rf bin .venv
 
 
+FILE_WITH_VERSION = src/restview/restviewhttp.py
 include release.mk
 
 
