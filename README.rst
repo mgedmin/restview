@@ -79,8 +79,8 @@ On .rpm based systems (e.g. Fedora) ::
   pip install restview
 
 
-.. |buildstatus| image:: https://api.travis-ci.org/mgedmin/restview.svg?branch=master
-.. _buildstatus: https://travis-ci.org/mgedmin/restview
+.. |buildstatus| image:: https://api.travis-ci.com/mgedmin/restview.svg?branch=master
+.. _buildstatus: https://travis-ci.com/mgedmin/restview
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/mgedmin/restview?branch=master&svg=true
 .. _appveyor: https://ci.appveyor.com/project/mgedmin/restview
