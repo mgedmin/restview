@@ -14,6 +14,7 @@ import threading
 import time
 import webbrowser
 
+
 try:
     import BaseHTTPServer
 except ImportError:
@@ -41,9 +42,9 @@ except ImportError:
 
 import docutils.core
 import docutils.writers.html4css1
-import readme_renderer.rst as readme_rst
 import pygments
-from pygments import lexers, formatters
+import readme_renderer.rst as readme_rst
+from pygments import formatters, lexers
 
 
 try:

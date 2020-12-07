@@ -5,16 +5,23 @@ import socket
 import unittest
 import webbrowser
 
+
 try:
     from cStringIO import StringIO
 except ImportError:
     from io import StringIO
 
-from mock import Mock, patch
 import docutils.utils
+from mock import Mock, patch
 
-from restview.restviewhttp import (MyRequestHandler, RestViewer,
-                                   get_host_name, launch_browser, main)
+from restview.restviewhttp import (
+    MyRequestHandler,
+    RestViewer,
+    get_host_name,
+    launch_browser,
+    main,
+)
+
 
 try:
     unicode
