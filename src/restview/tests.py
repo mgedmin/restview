@@ -669,7 +669,7 @@ def doctest_RestViewer_rest_to_html_strict_and_error_handling():
         </body>
         </html>
 
-        >>> stderr_patcher.stop()
+        >>> _ = stderr_patcher.stop()
 
     """
 
@@ -718,7 +718,7 @@ def doctest_RestViewer_rest_to_html_pypi_strict_and_error_handling():
         </body>
         </html>
 
-        >>> stderr_patcher.stop()
+        >>> _ = stderr_patcher.stop()
 
     """
 
