@@ -4,7 +4,7 @@ Changelog
 2.9.3 (unreleased)
 ------------------
 
-- Add support for Python 3.8 and 3.9.
+- Add support for Python 3.8, 3.9, and 3.10.
 
 - Drop support for Python 3.5.
 
