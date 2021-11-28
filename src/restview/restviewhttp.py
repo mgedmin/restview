@@ -458,8 +458,8 @@ class RestViewer(object):
             stylesheet_dirs = writer.default_stylesheet_dirs + [DATA_PATH]
             # docutils can't embed http:// or https:// URLs
             embed_stylesheet = '//' not in self.stylesheets
-            settings_overrides = {'stylesheet': self.stylesheets,
-                                  'stylesheet_path': None,
+            settings_overrides = {'stylesheet': None,
+                                  'stylesheet_path': self.stylesheets,
                                   'stylesheet_dirs': stylesheet_dirs,
                                   'embed_stylesheet': embed_stylesheet}
         else:
