@@ -4,6 +4,10 @@ Changelog
 2.9.3 (unreleased)
 ------------------
 
+- Fix incompatibility with docutils 0.18.1 that resulted in "Cannot embed
+  stylesheet" errors (`issue 61 <https://github.com/mgedmin/restview/pull/61>`_,
+  contributed by Sébastien Besson).
+
 - Add support for Python 3.8, 3.9, and 3.10.
 
 - Drop support for Python 3.5.
