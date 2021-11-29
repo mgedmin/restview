@@ -1,7 +1,7 @@
 Changelog
 =========
 
-2.9.3 (unreleased)
+2.9.3 (2021-11-29)
 ------------------
 
 - Fix incompatibility with docutils 0.18.1 that resulted in "Cannot embed

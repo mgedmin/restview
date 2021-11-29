@@ -31,6 +31,7 @@ setup(
     },
     description='ReStructuredText viewer',
     long_description=read('README.rst') + '\n\n' + read('CHANGES.rst'),
+    long_description_content_type='text/x-rst',
     license='GPL',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
