@@ -456,12 +456,17 @@ class RestViewer(object):
             writer.translator_class = SyntaxHighlightingHTMLTranslator
         if self.stylesheets:
             stylesheet_dirs = writer.default_stylesheet_dirs + [DATA_PATH]
-            # docutils can't embed http:// or https:// URLs
-            embed_stylesheet = '//' not in self.stylesheets
-            settings_overrides = {'stylesheet': self.stylesheets,
-                                  'stylesheet_path': None,
-                                  'stylesheet_dirs': stylesheet_dirs,
-                                  'embed_stylesheet': embed_stylesheet}
+            if '//' not in self.stylesheets:
+                settings_overrides = {'stylesheet': None,
+                                      'stylesheet_path': self.stylesheets,
+                                      'stylesheet_dirs': stylesheet_dirs,
+                                      'embed_stylesheet': True}
+            else:
+                # docutils can't embed http:// or https:// URLs
+                settings_overrides = {'stylesheet': self.stylesheets,
+                                      'stylesheet_path': None,
+                                      'stylesheet_dirs': stylesheet_dirs,
+                                      'embed_stylesheet': False}
         else:
             settings_overrides = {}
         settings_overrides['syntax_highlight'] = 'short'
