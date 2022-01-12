@@ -5,9 +5,9 @@ import socket
 import unittest
 import webbrowser
 from io import StringIO
+from unittest.mock import Mock, patch
 
 import docutils.utils
-from mock import Mock, patch
 
 from restview.restviewhttp import (
     MyRequestHandler,
