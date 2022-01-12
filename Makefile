@@ -27,7 +27,7 @@ include release.mk
 
 
 bin/pytest: | bin/pip
-	bin/pip install pytest mock
+	bin/pip install pytest 'mock;python_version<"3.3"'
 	ln -sfr .venv/$@ $@
 
 bin/restview: setup.py | bin/pip

@@ -12,7 +12,11 @@ except ImportError:
     from io import StringIO
 
 import docutils.utils
-from mock import Mock, patch
+
+try:
+    from unittest.mock import Mock, patch
+except ImportError:
+    from mock import Mock, patch
 
 from restview.restviewhttp import (
     MyRequestHandler,
