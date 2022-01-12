@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.0.0 (unreleased)
+3.0.0 (2022-01-12)
 ------------------
 
 - Drop support for Python 2.7.

@@ -23,7 +23,7 @@ import readme_renderer.rst as readme_rst
 from pygments import formatters, lexers
 
 
-__version__ = '3.0.0.dev0'
+__version__ = '3.0.0'
 
 
 # If restview is ever packaged for Debian, this'll likely be changed to
