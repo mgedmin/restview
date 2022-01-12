@@ -40,7 +40,6 @@ setup(
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
@@ -62,9 +61,8 @@ setup(
     package_data={'restview': ['*.css', '*.ico']},
     include_package_data=True,
     install_requires=['docutils', 'readme_renderer', 'pygments'],
-    extras_require={'syntax': [], 'test': ['mock']},
+    extras_require={'syntax': [], 'test': []},
     test_suite='restview.tests.test_suite',
-    tests_require=['mock'],
     zip_safe=False,
     entry_points="""
     [console_scripts]
