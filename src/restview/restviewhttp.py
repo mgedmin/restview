@@ -1,56 +1,26 @@
 """
 HTTP-based ReStructuredText viewer.
 """
-from __future__ import print_function
-
 import argparse
 import fnmatch
+import http.server
 import os
 import re
 import socket
+import socketserver
 import subprocess
 import sys
 import threading
 import time
 import webbrowser
-
-
-try:
-    import BaseHTTPServer
-except ImportError:
-    import http.server as BaseHTTPServer
-
-try:
-    import SocketServer
-except ImportError:
-    import socketserver as SocketServer
-
-try:
-    from html import escape
-except ImportError:
-    from cgi import escape
-
-try:
-    from urllib import unquote
-except ImportError:
-    from urllib.parse import unquote
-
-try:
-    from urlparse import parse_qs
-except ImportError:
-    from urllib.parse import parse_qs
+from html import escape
+from urllib.parse import parse_qs, unquote
 
 import docutils.core
 import docutils.writers.html4css1
 import pygments
 import readme_renderer.rst as readme_rst
 from pygments import formatters, lexers
-
-
-try:
-    unicode
-except NameError:
-    unicode = str
 
 
 __version__ = '2.9.4.dev0'
@@ -61,7 +31,7 @@ __version__ = '2.9.4.dev0'
 DATA_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class MyRequestHandler(http.server.BaseHTTPRequestHandler):
     """HTTP request handler that renders ReStructuredText on the fly."""
 
     server_version = "restviewhttp/" + __version__
@@ -219,7 +189,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def handle_rest_data(self, data, mtime=None, filename=None):
         html = self.server.renderer.rest_to_html(data, mtime=mtime,
                                                  filename=filename)
-        if isinstance(html, unicode):
+        if isinstance(html, str):
             html = html.encode('UTF-8')
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=UTF-8")
@@ -236,7 +206,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             error='Process returned error code %s.' % retcode,
             source=stderr or '(no output)',
             mtime=mtime)
-        if isinstance(html, unicode):
+        if isinstance(html, str):
             html = html.encode('UTF-8')
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=UTF-8")
@@ -265,7 +235,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def handle_dir(self, dirname):
         files = [(fn.replace(os.path.sep, '/'), fn) for fn in self.collect_files(dirname)]
         html = self.render_dir_listing("RST files in %s" % os.path.abspath(dirname), files)
-        if isinstance(html, unicode):
+        if isinstance(html, str):
             html = html.encode('UTF-8', 'replace')
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=UTF-8")
@@ -284,7 +254,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 files.append(('%s/%s' % (idx, os.path.basename(fn)),
                               fn))
         html = self.render_dir_listing("RST files", files)
-        if isinstance(html, unicode):
+        if isinstance(html, str):
             html = html.encode('UTF-8', 'replace')
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=UTF-8")
@@ -400,7 +370,7 @@ $source
 """
 
 
-class ThreadingHTTPServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class ThreadingHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
 
 

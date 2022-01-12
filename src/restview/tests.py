@@ -4,12 +4,7 @@ import os
 import socket
 import unittest
 import webbrowser
-
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
 import docutils.utils
 from mock import Mock, patch
@@ -21,12 +16,6 @@ from restview.restviewhttp import (
     launch_browser,
     main,
 )
-
-
-try:
-    unicode
-except NameError:
-    unicode = str
 
 
 class PopenStub(object):
@@ -54,9 +43,9 @@ class MyRequestHandlerForTests(MyRequestHandler):
         self.server.renderer.watch = None
         self.server.renderer.allowed_hosts = ['localhost']
         self.server.renderer.rest_to_html = lambda data, mtime=None, filename=None: \
-            unicode('HTML for %s with AJAX poller for %s' % (data, mtime))
+            'HTML for %s with AJAX poller for %s' % (data, mtime)
         self.server.renderer.render_exception = lambda title, error, source, mtime=None: \
-            unicode('HTML for error %s: %s: %s' % (title, error, source))
+            'HTML for error %s: %s: %s' % (title, error, source)
 
     def send_response(self, status):
         self.status = status
@@ -463,9 +452,9 @@ class TestMyRequestHandler(unittest.TestCase):
         handler = MyRequestHandlerForTests()
         handler.collect_files = lambda dir: ['a.txt', 'b/c.txt']
         handler.render_dir_listing = lambda title, files: \
-            unicode("<title>%s</title>\n%s" % (
+            "<title>%s</title>\n%s" % (
                 title,
-                '\n'.join('%s - %s' % (path, fn) for path, fn in files)))
+                '\n'.join('%s - %s' % (path, fn) for path, fn in files))
         body = handler.handle_dir('/path/to/dir')
         self.assertEqual(handler.status, 200)
         self.assertEqual(handler.headers['Content-Type'],
@@ -482,9 +471,9 @@ class TestMyRequestHandler(unittest.TestCase):
         handler = MyRequestHandlerForTests()
         handler.collect_files = lambda dir: ['a.txt', os.path.join('b', 'c.txt')]
         handler.render_dir_listing = lambda title, files: \
-            unicode("<title>%s</title>\n%s" % (
+            "<title>%s</title>\n%s" % (
                 title,
-                '\n'.join('%s - %s' % (path, fn) for path, fn in files)))
+                '\n'.join('%s - %s' % (path, fn) for path, fn in files))
         with patch('os.path.isdir', lambda fn: fn == 'subdir'):
             body = handler.handle_list([os.path.normpath('/path/to/file.txt'),
                                         'subdir'])
