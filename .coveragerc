@@ -1,5 +1,6 @@
 [run]
 source = restview
+omit = src/restview/__main__.py
 
 [report]
 exclude_lines =
