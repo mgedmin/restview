@@ -4,7 +4,7 @@ Changelog
 3.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Drop support for Python 3.6.
 
 
 3.0.0 (2022-01-12)
