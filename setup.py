@@ -60,7 +60,7 @@ setup(
     package_dir={'': 'src'},
     package_data={'restview': ['*.css', '*.ico']},
     include_package_data=True,
-    install_requires=['docutils', 'readme_renderer', 'pygments'],
+    install_requires=['docutils', 'readme_renderer < 37', 'pygments'],
     extras_require={'syntax': [], 'test': []},
     test_suite='restview.tests.test_suite',
     zip_safe=False,

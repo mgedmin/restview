@@ -8,6 +8,11 @@ Changelog
 
 - Drop support for Python 3.6.
 
+- Restrict readme-renderer to < 37.0, because it switched to a different
+  docutils writer (html5_polyglot instead of html4css1), which causes issues
+  (`issue 65 <https://github.com/mgedmin/restview/issues/65>`_).  This will
+  be fixed properly in a newer release.
+
 
 3.0.0 (2022-01-12)
 ------------------
