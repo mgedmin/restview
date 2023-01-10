@@ -541,9 +541,10 @@ def doctest_RestViewer_rest_to_html():
         ... ''', settings={'cloak_email_addresses': True}).strip())
         ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <?xml version="1.0" encoding="utf-8" ?>
-        <!DOCTYPE html...>
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
         <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         ...
         <title>example</title>
         <style type="text/css">
@@ -555,7 +556,7 @@ def doctest_RestViewer_rest_to_html():
         </style>
         </head>
         <body>
-        <main id="example">
+        <div class="document" id="example">
         <h1 class="title">example</h1>
         <BLANKLINE>
         <p>This is a doctest:</p>
@@ -569,9 +570,11 @@ def doctest_RestViewer_rest_to_html():
         <p>This is a reference: <a class="reference external" href="http://example.com/README.rst">README.rst</a></p>
         <p>This is an email: <a class="reference external" href="mailto:marius&#37;&#52;&#48;gedmin&#46;as">marius<span>&#64;</span>gedmin<span>&#46;</span>as</a></p>
         <p>This is a literal block:</p>
-        <pre class="literal-block">See <a href="CHANGES.rst">CHANGES.rst</a>, mkay?</pre>
+        <pre class="literal-block">
+        See <a href="CHANGES.rst">CHANGES.rst</a>, mkay?
+        </pre>
         <p>This is an inline literal: <tt class="docutils literal"><a href="README.txt">README.txt</a></tt>.</p>
-        </main>
+        </div>
         </body>
         </html>
 
@@ -591,7 +594,10 @@ def doctest_RestViewer_rest_to_html_css_url():
         ... ''').strip())
         ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <?xml version="1.0" encoding="utf-8" ?>
-        <!DOCTYPE html...>
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         ...
         <title>...</title>
         <link rel="stylesheet" href="http://example.com/my.css" type="text/css" />
@@ -600,11 +606,11 @@ def doctest_RestViewer_rest_to_html_css_url():
         </style>
         </head>
         <body>
-        <main>
+        <div class="document">
         <BLANKLINE>
         <BLANKLINE>
         <p>Some text</p>
-        </main>
+        </div>
         </body>
         </html>
 
@@ -723,18 +729,21 @@ def doctest_RestViewer_rest_to_html_pypi_strict():
         ... ''').strip().replace("&quot;", '"'))
         ... # doctest: +ELLIPSIS,+REPORT_NDIFF
         <?xml version="1.0" encoding="utf-8" ?>
-        <!DOCTYPE html...>
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         ...
         <title>Hello</title>
         <style type="text/css">
         ...
         </head>
         <body>
-        <main id="hello">
+        <div class="document" id="hello">
         <h1 class="title">Hello</h1>
         <BLANKLINE>
         <p><a href="http://www.example.com" rel="nofollow">This is fine</a>.</p>
-        </main>
+        </div>
         </body>
         </html>
 
