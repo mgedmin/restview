@@ -1,7 +1,7 @@
 Changelog
 =========
 
-3.0.1 (unreleased)
+3.0.1 (2023-01-10)
 ------------------
 
 - Add support for Python 3.11.
