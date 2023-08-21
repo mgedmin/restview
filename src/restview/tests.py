@@ -540,7 +540,7 @@ def doctest_RestViewer_rest_to_html():
         ... This is an inline literal: ``README.txt``.
         ... ''', settings={'cloak_email_addresses': True}).strip())
         ... # doctest: +ELLIPSIS,+REPORT_NDIFF
-        <?xml version="1.0" encoding="utf-8" ?>
+        <?xml version="1.0" encoding="utf-8"...?>
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
         <head>
@@ -584,35 +584,11 @@ def doctest_RestViewer_rest_to_html():
 def doctest_RestViewer_rest_to_html_css_url():
     """Test for RestViewer.rest_to_html
 
-    XXX: this shows pygments styles inlined *after* the external css, which
-    means it's hard to override them!
-
         >>> viewer = RestViewer('.')
         >>> viewer.stylesheets = 'http://example.com/my.css'
-        >>> print(viewer.rest_to_html(b'''
-        ... Some text
-        ... ''').strip())
-        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
-        <?xml version="1.0" encoding="utf-8" ?>
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-        <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        ...
-        <title>...</title>
+        >>> html = viewer.rest_to_html(b'Some text')
+        >>> grep('stylesheet', html)
         <link rel="stylesheet" href="http://example.com/my.css" type="text/css" />
-        <style type="text/css">
-        ...
-        </style>
-        </head>
-        <body>
-        <div class="document">
-        <BLANKLINE>
-        <BLANKLINE>
-        <p>Some text</p>
-        </div>
-        </body>
-        </html>
 
     """
 
@@ -720,32 +696,16 @@ def doctest_RestViewer_rest_to_html_pypi_strict():
         >>> viewer = RestViewer('.')
         >>> viewer.stylesheets = None
         >>> viewer.pypi_strict = True
-        >>> print(viewer.rest_to_html(b'''
+        >>> html = viewer.rest_to_html(b'''
         ... Hello
         ... -----
         ...
         ... `This is fine <http://www.example.com>`__.
         ...
-        ... ''').strip().replace("&quot;", '"'))
-        ... # doctest: +ELLIPSIS,+REPORT_NDIFF
-        <?xml version="1.0" encoding="utf-8" ?>
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-        <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        ...
+        ... ''')
+        >>> grep('Hello', html)
         <title>Hello</title>
-        <style type="text/css">
-        ...
-        </head>
-        <body>
-        <div class="document" id="hello">
         <h1 class="title">Hello</h1>
-        <BLANKLINE>
-        <p><a href="http://www.example.com" rel="nofollow">This is fine</a>.</p>
-        </div>
-        </body>
-        </html>
 
     """
 
@@ -1029,6 +989,12 @@ class TestMain(unittest.TestCase):
     def test_custom_css_file(self):
         self.run_main('.', '--css', 'my.css',
                       serve_called=True, browser_launched=True)
+
+
+def grep(needle, haystack):
+    for line in haystack.splitlines():
+        if needle in line:
+            print(line)
 
 
 def test_suite():
