@@ -17,7 +17,7 @@ from html import escape
 from urllib.parse import parse_qs, unquote
 
 import docutils.core
-import docutils.writers.html4css1
+import docutils.writers.html5_polyglot
 import pygments
 import readme_renderer.rst as readme_rst
 from pygments import formatters, lexers
@@ -385,9 +385,9 @@ class RestViewer(object):
 
     # Comma-separated list of URLs, full filenames, or filenames in the
     # default search path (if you want to refer to docutils default
-    # stylesheets html4css1.css or math.css, or restview's default
+    # stylesheets minimal.css or math.css, or restview's default
     # stylesheets restview.css and oldrestview.css).
-    stylesheets = 'html4css1.css,restview.css'
+    stylesheets = 'minimal.css,plain.css'
 
     favicon_path = os.path.join(DATA_PATH, 'favicon.ico')
 
@@ -421,7 +421,7 @@ class RestViewer(object):
 
     def rest_to_html(self, rest_input, settings=None, mtime=None, filename=None):
         """Render ReStructuredText."""
-        writer = docutils.writers.html4css1.Writer()
+        writer = docutils.writers.html5_polyglot.Writer()
         if pygments is not None:
             writer.translator_class = SyntaxHighlightingHTMLTranslator
         if self.stylesheets:
@@ -521,15 +521,15 @@ class SyntaxHighlightingHTMLTranslator(readme_rst.ReadMeHTMLTranslator):
     formatter_styles = formatters.HtmlFormatter(style='colorful').get_style_defs('pre')
 
     def __init__(self, document):
-        docutils.writers.html4css1.HTMLTranslator.__init__(self, document)
+        super().__init__(document)
         self.body_prefix[:0] = ['<style type="text/css">\n', self.formatter_styles, '\n</style>\n']
 
     def visit_doctest_block(self, node):
-        docutils.writers.html4css1.HTMLTranslator.visit_doctest_block(self, node)
+        super().visit_doctest_block(node)
         self.in_doctest = True
 
     def depart_doctest_block(self, node):
-        docutils.writers.html4css1.HTMLTranslator.depart_doctest_block(self, node)
+        super().depart_doctest_block(node)
         self.in_doctest = False
 
     def visit_Text(self, node):
@@ -550,20 +550,20 @@ class SyntaxHighlightingHTMLTranslator(readme_rst.ReadMeHTMLTranslator):
     def visit_literal(self, node):
         self.in_text = True
         try:
-            docutils.writers.html4css1.HTMLTranslator.visit_literal(self, node)
+            super().visit_literal(node)
         finally:
             self.in_text = False
 
     def visit_reference(self, node):
         self.in_reference = True
-        docutils.writers.html4css1.HTMLTranslator.visit_reference(self, node)
+        super().visit_reference(node)
 
     def depart_reference(self, node):
-        docutils.writers.html4css1.HTMLTranslator.depart_reference(self, node)
+        super().depart_reference(node)
         self.in_reference = False
 
     def encode(self, text):
-        encoded = docutils.writers.html4css1.HTMLTranslator.encode(self, text)
+        encoded = super().encode(text)
         if self.in_text and not self.in_reference:
             encoded = self.link_local_files(encoded)
         return encoded
