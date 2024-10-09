@@ -4,7 +4,7 @@ Changelog
 3.0.2 (unreleased)
 ------------------
 
-- Add support for Python 3.12.
+- Add support for Python 3.12 and 3.13.
 
 
 3.0.1 (2023-01-10)
