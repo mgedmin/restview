@@ -24,6 +24,16 @@ clean:                          ##: remove build artifacts
 
 FILE_WITH_VERSION = src/restview/restviewhttp.py
 include release.mk
+#
+# override the release recipe in release.mk
+define release_recipe =
+$(default_release_recipe_publish_and_tag)
+$(default_release_recipe_increment_and_push)
+	@echo "Then please create a GitHub release with"
+	@echo
+	@echo "  gh release create"
+	@echo
+endef
 
 
 bin/pytest: | bin/pip
