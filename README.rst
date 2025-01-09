@@ -79,7 +79,7 @@ On .rpm based systems (e.g. Fedora) ::
   pip install restview
 
 
-.. |buildstatus| image:: https://github.com/mgedmin/restview/workflows/build/badge.svg?branch=master
+.. |buildstatus| image:: https://github.com/mgedmin/restview/actions/workflows/build.yml/badge.svg?branch=master
 .. _buildstatus: https://github.com/mgedmin/restview/actions
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/mgedmin/restview?branch=master&svg=true
