@@ -811,7 +811,14 @@ def main():
         '--pypi-strict',
         help='enable additional restrictions that PyPI performs',
         action='store_true', default=False)
-    opts = parser.parse_args(sys.argv[1:])
+    cli_opts = parser.parse_args(sys.argv[1:])
+
+    cf_handler = ConfigFileHandler(CONFIG_FILE_PATH, CONFIG_OPTIONS_SECTION)
+    cf_handler.create_config_file()
+    config_file_opts = cf_handler.read_opts()
+    opts = argparse.Namespace(
+        **cf_handler.join_opts(vars(cli_opts), config_file_opts))
+
     args = opts.root
     if opts.long_description:
         opts.execute = 'python setup.py --long-description'
