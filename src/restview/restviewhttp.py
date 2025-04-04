@@ -688,6 +688,53 @@ class ConfigFileHandler:
             self.config_file_path.write_text(
                 ConfigFileHandler.CONFIG_FILE_TEMPLATE)
 
+    def read_opts(self):
+        """Read config options from file if exists
+
+        Coerces values into Python types, comma-separeted items into lists
+        Result only contains uncommented options (no option=None by default)
+        Config file errors are non-fatal, handled to resume normal execution
+        """
+
+        try:
+            with open(self.config_file_path) as config_file:
+                self.parser.read_file(config_file)
+                config = {
+                    'listen': self.parser.get(
+                        self.opts_section, 'listen', fallback=None),
+                    'allowed_hosts': self.parser.get(
+                        self.opts_section, 'allowed_hosts', fallback=None),
+                    'halt_level': self.parser.getint(
+                        self.opts_section, 'halt_level', fallback=None),
+                    'browser': self.parser.getboolean(
+                        self.opts_section, 'browser', fallback=None),
+                    'long_description': self.parser.getboolean(
+                        self.opts_section, 'long_description', fallback=None),
+                    'pypi_strict': self.parser.getboolean(
+                        self.opts_section, 'pypi_strict', fallback=None),
+                    'stylesheets': ConfigFileHandler.csvs_to_list(self.parser.get(
+                        self.opts_section, 'css', fallback=None)),
+                    'watch': ConfigFileHandler.csvs_to_list(self.parser.get(
+                        self.opts_section, 'watch', fallback=None)),
+                }
+                return {k: v for k, v in config.items() if v is not None}
+        except FileNotFoundError:
+            print(f'Error: config file {self.config_file_path} does not exist, '
+                  'only provided CLI options will be considered')
+        except configparser.Error:
+            print(f'Error: could not read options from config file {self.config_file_path}, '
+                  'only provided CLI options will be considered')
+        return {}
+
+    @classmethod
+    def csvs_to_list(cls, csvs):
+        """Split comma-separeted values into a list"""
+        if csvs is None:
+            return None
+        delimiter_pattern = r'\s*,\s*'
+        return re.split(delimiter_pattern, csvs)
+
+
 def main():
     parser = argparse.ArgumentParser(
                     usage="%(prog)s [options] root [...]",

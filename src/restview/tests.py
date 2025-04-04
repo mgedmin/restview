@@ -1016,6 +1016,65 @@ class TestCofigFileHandler(unittest.TestCase):
         self.cfh.config_file_path.write_text.assert_called_once_with(
             ConfigFileHandler.CONFIG_FILE_TEMPLATE)
 
+    def test_read_config_file_not_found(self):
+        with patch('builtins.print') as m_print:
+            with patch('builtins.open', new_callable=mock_open) as m_open:
+                m_open.side_effect = FileNotFoundError
+                result = self.cfh.read_opts()
+                msg = (f'Error: config file {self.cfh.config_file_path} does '
+                       'not exist, only provided CLI options will be considered')
+                m_open.assert_called_once_with(self.cfh.config_file_path)
+                m_print.assert_called_once_with(msg)
+                self.assertDictEqual(result, {})
+
+    def test_read_config_empty_file(self):
+        with patch('builtins.open', new_callable=mock_open, read_data='') as m_open:
+            result = self.cfh.read_opts()
+            m_open.assert_called_once_with(self.cfh.config_file_path)
+            self.assertDictEqual(result, {})
+
+    def test_read_config_invalid_syntax(self):
+        with patch('builtins.print') as m_print:
+            with patch('builtins.open', new_callable=mock_open,
+                       read_data='invalid syntax') as m_open:
+                with patch.object(self.cfh.parser, 'read_file',
+                                  side_effect=configparser.Error):
+                    result = self.cfh.read_opts()
+                    msg = ("Error: could not read options from config file "
+                           f"{self.cfh.config_file_path}, only provided CLI "
+                           "options will be considered")
+                    m_open.assert_called_once_with(self.cfh.config_file_path)
+                    m_print.assert_called_once_with(msg)
+                    self.assertDictEqual(result, {})
+
+    def test_read_config_valid_all_options(self):
+        config_data = f"""
+        [{self.cfh.opts_section}]
+        css= hi, hello , world
+        pypi_strict=True
+        halt_level = 3
+        listen =8080
+        long_description = TRUE
+        browser = false
+        """
+        expected = {
+            'stylesheets': [
+                'hi',
+                'hello',
+                'world',
+            ],
+            'pypi_strict': True,
+            'browser': False,
+            'long_description': True,
+            'halt_level': 3,
+            'listen': '8080',
+        }
+        with patch('builtins.open', new_callable=mock_open,
+                   read_data=config_data) as m_open:
+            result = self.cfh.read_opts()
+            m_open.assert_called_once_with(self.cfh.config_file_path)
+            self.assertDictEqual(result, expected)
+
 def grep(needle, haystack):
     for line in haystack.splitlines():
         if needle in line:
