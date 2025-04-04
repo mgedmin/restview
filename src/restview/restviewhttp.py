@@ -679,6 +679,15 @@ class ConfigFileHandler:
         self.opts_section = opts_sect
         self.parser = configparser.ConfigParser()
 
+    def create_config_file(self):
+        """Create ~/{config_file_name} if not exists
+
+        CONFIG_FILE_TEMPLATE is the content of the file created
+        """
+        if not self.config_file_path.exists():
+            self.config_file_path.write_text(
+                ConfigFileHandler.CONFIG_FILE_TEMPLATE)
+
 def main():
     parser = argparse.ArgumentParser(
                     usage="%(prog)s [options] root [...]",

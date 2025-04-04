@@ -1,3 +1,4 @@
+import configparser
 import doctest
 import errno
 import os
@@ -5,11 +6,13 @@ import socket
 import unittest
 import webbrowser
 from io import StringIO
-from unittest.mock import Mock, patch
+from pathlib import Path
+from unittest.mock import Mock, mock_open, patch
 
 import docutils.utils
 
 from restview.restviewhttp import (
+    ConfigFileHandler,
     MyRequestHandler,
     RestViewer,
     get_host_name,
@@ -990,6 +993,28 @@ class TestMain(unittest.TestCase):
         self.run_main('.', '--css', 'my.css',
                       serve_called=True, browser_launched=True)
 
+
+class TestCofigFileHandler(unittest.TestCase):
+    def setUp(self):
+        self.cfh = ConfigFileHandler(
+            config_file_path=Path('some-arbitrary-path'),
+            opts_sect='DEFAULT'
+        )
+
+    def test_create_config_if_file_exists(self):
+        self.cfh.config_file_path = Mock(spec_set=Path)
+        self.cfh.config_file_path.exists.return_value = True
+        self.cfh.create_config_file()
+        self.cfh.config_file_path.exists.assert_called_once()
+        self.cfh.config_file_path.write_text.assert_not_called()
+
+    def test_create_config_if_file_not_exists(self):
+        self.cfh.config_file_path = Mock(spec_set=Path)
+        self.cfh.config_file_path.exists.return_value = False
+        self.cfh.create_config_file()
+        self.cfh.config_file_path.exists.assert_called_once()
+        self.cfh.config_file_path.write_text.assert_called_once_with(
+            ConfigFileHandler.CONFIG_FILE_TEMPLATE)
 
 def grep(needle, haystack):
     for line in haystack.splitlines():
