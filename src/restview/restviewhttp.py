@@ -2,6 +2,7 @@
 HTTP-based ReStructuredText viewer.
 """
 import argparse
+import configparser
 import fnmatch
 import http.server
 import os
@@ -14,6 +15,7 @@ import threading
 import time
 import webbrowser
 from html import escape
+from pathlib import Path
 from urllib.parse import parse_qs, unquote
 
 import docutils.core
@@ -24,6 +26,10 @@ from pygments import formatters, lexers
 
 
 __version__ = '3.0.3.dev0'
+
+
+CONFIG_FILE_PATH = Path.home() / '.restview.ini'
+CONFIG_OPTIONS_SECTION = 'DEFAULT'
 
 
 # If restview is ever packaged for Debian, this'll likely be changed to
@@ -648,6 +654,30 @@ def launch_browser(url):
     t.setDaemon(True)
     t.start()
 
+
+class ConfigFileHandler:
+    """Creates config files and reads default options"""
+
+    # Default template for newly-created config files
+    # Contains commented out sample key/value option pairs
+    CONFIG_FILE_TEMPLATE = (
+        "# for options description, refer to the original docs at "
+        "https://github.com/calismu/restview/blob/master/README.rst#synopsis\n\n"
+        "[DEFAULT]\n"
+        "# listen = *:8080\n"
+        "# allowed_hosts = 1.2.3.4,LOCALHOST\n"
+        "# browser = true\n"
+        "# watch = file1.rst,file2.rst,file3.rst\n"
+        "# long_description = true\n"
+        "# css = sheet1.css,sheet2.css\n"
+        "# pypi_strict = FALSE\n"
+        "# halt_level = 2\n"
+    )
+
+    def __init__(self, config_file_path, opts_sect):
+        self.config_file_path = config_file_path
+        self.opts_section = opts_sect
+        self.parser = configparser.ConfigParser()
 
 def main():
     parser = argparse.ArgumentParser(
