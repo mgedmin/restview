@@ -727,6 +727,17 @@ class ConfigFileHandler:
         return {}
 
     @classmethod
+    def join_opts(cls, cli_opts, config_opts):
+        """Join dictionaries containing CLI & config options
+
+        CLI options override config options if provided (left joined)
+        """
+        opts = dict(config_opts)
+        opts.update({k: v for k, v in cli_opts.items()
+                    if k not in opts or v not in (None, False, [], '')})
+        return opts
+
+    @classmethod
     def csvs_to_list(cls, csvs):
         """Split comma-separeted values into a list"""
         if csvs is None:

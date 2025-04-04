@@ -1075,6 +1075,27 @@ class TestCofigFileHandler(unittest.TestCase):
             m_open.assert_called_once_with(self.cfh.config_file_path)
             self.assertDictEqual(result, expected)
 
+    def test_join_opts(self):
+        cli_opts = {
+            'listen': None,
+            'allowed_hosts': ['localhost', '127.0.0.1'],
+            'strict': True,
+            'stylesheets': [],
+        }
+        config_opts = {
+            'listen': '8080',
+            'strict': False,
+        }
+        opts = ConfigFileHandler.join_opts(cli_opts, config_opts)
+        expected = {
+            'stylesheets': [],
+            'allowed_hosts': ['localhost', '127.0.0.1'],
+            'listen': '8080',
+            'strict': True,
+        }
+        self.assertDictEqual(opts, expected)
+
+
 def grep(needle, haystack):
     for line in haystack.splitlines():
         if needle in line:
