@@ -673,6 +673,7 @@ class ConfigFileHandler:
     # css = sheet1.css,sheet2.css
     # pypi-strict = false
     # halt-level = 2
+    # report-level = 4
     '''
 
     def __init__(self, config_file_path, opts_sect):
@@ -708,6 +709,8 @@ class ConfigFileHandler:
                         self.opts_section, 'allowed-hosts', fallback=None),
                     'halt_level': self.parser.getint(
                         self.opts_section, 'halt-level', fallback=None),
+                    'report_level': self.parser.getint(
+                        self.opts_section, 'report-level', fallback=None),
                     'browser': self.parser.getboolean(
                         self.opts_section, 'browser', fallback=None),
                     'long_description': self.parser.getboolean(
@@ -737,6 +740,9 @@ class ConfigFileHandler:
         opts = dict(config_opts)
         opts.update({k: v for k, v in cli_opts.items()
                     if k not in opts or v not in (None, False, [], '')})
+        # --report-level should default to 2 if not provided
+        if not opts.get('report_level'):
+            opts['report_level'] = 2
         return opts
 
     @classmethod
@@ -796,7 +802,7 @@ def main():
         help='''set the "report_level" option of docutils; restview
             will report system messages at or above this level (1=info,
             2=warnings, 3=errors, 4=severe)''',
-        type=int, default=2)
+        type=int, default=None)
     halt_level_group = parser.add_mutually_exclusive_group()
     halt_level_group.add_argument(
         '--halt-level',

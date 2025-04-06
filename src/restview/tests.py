@@ -1055,6 +1055,7 @@ class TestCofigFileHandler(unittest.TestCase):
         listen =8080
         long-description = TRUE
         browser = false
+        report-level = 3
         """
         expected = {
             'stylesheets': [
@@ -1067,6 +1068,7 @@ class TestCofigFileHandler(unittest.TestCase):
             'long_description': True,
             'halt_level': 3,
             'listen': '8080',
+            'report_level': 3,
         }
         with patch('builtins.open', new_callable=mock_open,
                    read_data=config_data) as m_open:
@@ -1091,6 +1093,29 @@ class TestCofigFileHandler(unittest.TestCase):
             'allowed_hosts': ['localhost', '127.0.0.1'],
             'listen': '8080',
             'strict': True,
+            'report_level': 2,
+        }
+        self.assertDictEqual(opts, expected)
+
+    def test_join_opts_with_report_level(self):
+        cli_opts = {
+            'listen': None,
+            'allowed_hosts': ['localhost', '127.0.0.1'],
+            'strict': True,
+            'stylesheets': [],
+        }
+        config_opts = {
+            'listen': '8080',
+            'strict': False,
+            'report_level': 4,
+        }
+        opts = ConfigFileHandler.join_opts(cli_opts, config_opts)
+        expected = {
+            'stylesheets': [],
+            'allowed_hosts': ['localhost', '127.0.0.1'],
+            'listen': '8080',
+            'strict': True,
+            'report_level': 4,
         }
         self.assertDictEqual(opts, expected)
 
