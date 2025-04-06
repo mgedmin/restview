@@ -29,7 +29,7 @@ from pygments import formatters, lexers
 __version__ = '3.0.3.dev0'
 
 
-CONFIG_FILE_PATH = Path.home() / '.restview.ini'
+CONFIG_FILE_PATH = Path('~/.config/restview/restview.ini').expanduser()
 CONFIG_OPTIONS_SECTION = 'DEFAULT'
 
 
@@ -686,6 +686,7 @@ class ConfigFileHandler:
         CONFIG_FILE_TEMPLATE is the content of the file created
         """
         if not self.config_file_path.exists():
+            self.config_file_path.parent.mkdir(parents=True, exist_ok=True)
             self.config_file_path.write_text(
                 textwrap.dedent(ConfigFileHandler.CONFIG_FILE_TEMPLATE))
 
