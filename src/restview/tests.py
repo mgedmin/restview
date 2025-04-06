@@ -4,6 +4,7 @@ import errno
 import os
 import socket
 import sys
+import textwrap
 import unittest
 import webbrowser
 from io import StringIO
@@ -1015,7 +1016,7 @@ class TestCofigFileHandler(unittest.TestCase):
         self.cfh.create_config_file()
         self.cfh.config_file_path.exists.assert_called_once()
         self.cfh.config_file_path.write_text.assert_called_once_with(
-            ConfigFileHandler.CONFIG_FILE_TEMPLATE)
+            textwrap.dedent(ConfigFileHandler.CONFIG_FILE_TEMPLATE))
 
     def test_read_config_file_not_found(self):
         with patch('builtins.print') as m_print:
@@ -1049,10 +1050,10 @@ class TestCofigFileHandler(unittest.TestCase):
         config_data = f"""
         [{self.cfh.opts_section}]
         css= hi, hello , world
-        pypi_strict=True
-        halt_level = 3
+        pypi-strict=True
+        halt-level = 3
         listen =8080
-        long_description = TRUE
+        long-description = TRUE
         browser = false
         """
         expected = {

@@ -11,6 +11,7 @@ import socket
 import socketserver
 import subprocess
 import sys
+import textwrap
 import threading
 import time
 import webbrowser
@@ -660,19 +661,19 @@ class ConfigFileHandler:
 
     # Default template for newly-created config files
     # Contains commented out sample key/value option pairs
-    CONFIG_FILE_TEMPLATE = (
-        "# for options description, refer to the original docs at "
-        "https://github.com/calismu/restview/blob/master/README.rst#synopsis\n\n"
-        "[DEFAULT]\n"
-        "# listen = *:8080\n"
-        "# allowed_hosts = 1.2.3.4,LOCALHOST\n"
-        "# browser = true\n"
-        "# watch = file1.rst,file2.rst,file3.rst\n"
-        "# long_description = true\n"
-        "# css = sheet1.css,sheet2.css\n"
-        "# pypi_strict = FALSE\n"
-        "# halt_level = 2\n"
-    )
+    CONFIG_FILE_TEMPLATE = '''\
+    # for options description, refer to the original docs at
+    # https://github.com/calismu/restview/blob/master/README.rst#synopsis
+    [DEFAULT]
+    # listen = *:8080
+    # allowed-hosts = 1.2.3.4,localhost
+    # browser = true
+    # watch = file1.rst,file2.rst,file3.rst
+    # long-description = true
+    # css = sheet1.css,sheet2.css
+    # pypi-strict = false
+    # halt-level = 2
+    '''
 
     def __init__(self, config_file_path, opts_sect):
         self.config_file_path = config_file_path
@@ -686,12 +687,12 @@ class ConfigFileHandler:
         """
         if not self.config_file_path.exists():
             self.config_file_path.write_text(
-                ConfigFileHandler.CONFIG_FILE_TEMPLATE)
+                textwrap.dedent(ConfigFileHandler.CONFIG_FILE_TEMPLATE))
 
     def read_opts(self):
         """Read config options from file if exists
 
-        Coerces values into Python types, comma-separeted items into lists
+        Coerces values into Python types, comma-separated items into lists
         Result only contains uncommented options (no option=None by default)
         Config file errors are non-fatal, handled to resume normal execution
         """
@@ -703,15 +704,15 @@ class ConfigFileHandler:
                     'listen': self.parser.get(
                         self.opts_section, 'listen', fallback=None),
                     'allowed_hosts': self.parser.get(
-                        self.opts_section, 'allowed_hosts', fallback=None),
+                        self.opts_section, 'allowed-hosts', fallback=None),
                     'halt_level': self.parser.getint(
-                        self.opts_section, 'halt_level', fallback=None),
+                        self.opts_section, 'halt-level', fallback=None),
                     'browser': self.parser.getboolean(
                         self.opts_section, 'browser', fallback=None),
                     'long_description': self.parser.getboolean(
-                        self.opts_section, 'long_description', fallback=None),
+                        self.opts_section, 'long-description', fallback=None),
                     'pypi_strict': self.parser.getboolean(
-                        self.opts_section, 'pypi_strict', fallback=None),
+                        self.opts_section, 'pypi-strict', fallback=None),
                     'stylesheets': ConfigFileHandler.csvs_to_list(self.parser.get(
                         self.opts_section, 'css', fallback=None)),
                     'watch': ConfigFileHandler.csvs_to_list(self.parser.get(
@@ -739,7 +740,7 @@ class ConfigFileHandler:
 
     @classmethod
     def csvs_to_list(cls, csvs):
-        """Split comma-separeted values into a list"""
+        """Split comma-separated values into a list"""
         if csvs is None:
             return None
         delimiter_pattern = r'\s*,\s*'
