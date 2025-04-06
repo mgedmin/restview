@@ -719,11 +719,11 @@ class ConfigFileHandler:
                 }
                 return {k: v for k, v in config.items() if v is not None}
         except FileNotFoundError:
-            print(f'Error: config file {self.config_file_path} does not exist, '
-                  'only provided CLI options will be considered')
-        except configparser.Error:
+            pass
+        except configparser.Error as e:
             print(f'Error: could not read options from config file {self.config_file_path}, '
-                  'only provided CLI options will be considered')
+                  f'only provided CLI options will be considered:\n{e}',
+                  file=sys.stderr)
         return {}
 
     @classmethod

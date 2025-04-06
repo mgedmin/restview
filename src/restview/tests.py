@@ -3,6 +3,7 @@ import doctest
 import errno
 import os
 import socket
+import sys
 import unittest
 import webbrowser
 from io import StringIO
@@ -1021,10 +1022,8 @@ class TestCofigFileHandler(unittest.TestCase):
             with patch('builtins.open', new_callable=mock_open) as m_open:
                 m_open.side_effect = FileNotFoundError
                 result = self.cfh.read_opts()
-                msg = (f'Error: config file {self.cfh.config_file_path} does '
-                       'not exist, only provided CLI options will be considered')
                 m_open.assert_called_once_with(self.cfh.config_file_path)
-                m_print.assert_called_once_with(msg)
+                m_print.assert_not_called()
                 self.assertDictEqual(result, {})
 
     def test_read_config_empty_file(self):
@@ -1038,13 +1037,12 @@ class TestCofigFileHandler(unittest.TestCase):
             with patch('builtins.open', new_callable=mock_open,
                        read_data='invalid syntax') as m_open:
                 with patch.object(self.cfh.parser, 'read_file',
-                                  side_effect=configparser.Error):
+                                  side_effect=configparser.Error('No sections exist!')):
                     result = self.cfh.read_opts()
-                    msg = ("Error: could not read options from config file "
-                           f"{self.cfh.config_file_path}, only provided CLI "
-                           "options will be considered")
+                    msg = (f"Error: could not read options from config file {self.cfh.config_file_path}, "
+                           "only provided CLI options will be considered:\nNo sections exist!")
                     m_open.assert_called_once_with(self.cfh.config_file_path)
-                    m_print.assert_called_once_with(msg)
+                    m_print.assert_called_once_with(msg, file=sys.stderr)
                     self.assertDictEqual(result, {})
 
     def test_read_config_valid_all_options(self):
