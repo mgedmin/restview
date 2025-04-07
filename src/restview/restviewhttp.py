@@ -663,7 +663,7 @@ class ConfigFileHandler:
     # Contains commented out sample key/value option pairs
     CONFIG_FILE_TEMPLATE = '''\
     # for options description, refer to the original docs at
-    # https://github.com/calismu/restview/blob/master/README.rst#synopsis
+    # https://github.com/mgedmin/restview?tab=readme-ov-file#synopsis
     [DEFAULT]
     # listen = *:8080
     # allowed-hosts = 1.2.3.4,localhost
