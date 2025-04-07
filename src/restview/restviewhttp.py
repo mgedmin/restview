@@ -739,10 +739,12 @@ class ConfigFileHandler:
         """
         opts = dict(config_opts)
         opts.update({k: v for k, v in cli_opts.items()
-                    if k not in opts or v not in (None, False, [], '')})
+                    if k not in opts or v not in (None, [], '')})
         # --report-level should default to 2 if not provided
         if not opts.get('report_level'):
             opts['report_level'] = 2
+        if not opts.get('pypi_strict'):
+            opts['pypi_strict'] = False
         return opts
 
     @classmethod
@@ -818,7 +820,7 @@ def main():
     parser.add_argument(
         '--pypi-strict',
         help='enable additional restrictions that PyPI performs',
-        action='store_true', default=False)
+        action=argparse.BooleanOptionalAction)
     cli_opts = parser.parse_args(sys.argv[1:])
 
     cf_handler = ConfigFileHandler(CONFIG_FILE_PATH, CONFIG_OPTIONS_SECTION)

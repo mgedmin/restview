@@ -1080,20 +1080,23 @@ class TestCofigFileHandler(unittest.TestCase):
         cli_opts = {
             'listen': None,
             'allowed_hosts': ['localhost', '127.0.0.1'],
-            'strict': True,
+            'pypi_strict': True,
             'stylesheets': [],
+            'browser': False,
         }
         config_opts = {
             'listen': '8080',
-            'strict': False,
+            'pypi_strict': False,
+            'browser': True,
         }
         opts = ConfigFileHandler.join_opts(cli_opts, config_opts)
         expected = {
             'stylesheets': [],
             'allowed_hosts': ['localhost', '127.0.0.1'],
             'listen': '8080',
-            'strict': True,
             'report_level': 2,
+            'pypi_strict': True,
+            'browser': False,
         }
         self.assertDictEqual(opts, expected)
 
@@ -1101,12 +1104,12 @@ class TestCofigFileHandler(unittest.TestCase):
         cli_opts = {
             'listen': None,
             'allowed_hosts': ['localhost', '127.0.0.1'],
-            'strict': True,
+            'pypi_strict': False,
             'stylesheets': [],
         }
         config_opts = {
             'listen': '8080',
-            'strict': False,
+            'pypi_strict': True,
             'report_level': 4,
         }
         opts = ConfigFileHandler.join_opts(cli_opts, config_opts)
@@ -1114,8 +1117,8 @@ class TestCofigFileHandler(unittest.TestCase):
             'stylesheets': [],
             'allowed_hosts': ['localhost', '127.0.0.1'],
             'listen': '8080',
-            'strict': True,
             'report_level': 4,
+            'pypi_strict': False,
         }
         self.assertDictEqual(opts, expected)
 
