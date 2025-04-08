@@ -4,7 +4,7 @@ Changelog
 3.0.3 (unreleased)
 ------------------
 
-- Drop support for Python 3.7.
+- Drop support for Python 3.7 and 3.8.
 
 
 3.0.2 (2024-10-09)
