@@ -30,7 +30,6 @@ __version__ = '3.0.3.dev0'
 
 
 CONFIG_FILE_PATH = Path('~/.config/restview/restview.ini').expanduser()
-CONFIG_OPTIONS_SECTION = 'DEFAULT'
 
 
 # If restview is ever packaged for Debian, this'll likely be changed to
@@ -659,12 +658,14 @@ def launch_browser(url):
 class ConfigFileHandler:
     """Creates config files and reads default options"""
 
+    CONFIG_OPTIONS_SECTION = 'restview'
+
     # Default template for newly-created config files
     # Contains commented out sample key/value option pairs
-    CONFIG_FILE_TEMPLATE = '''\
+    CONFIG_FILE_TEMPLATE = f'''\
     # for options description, refer to the original docs at
     # https://github.com/mgedmin/restview?tab=readme-ov-file#synopsis
-    [DEFAULT]
+    [{CONFIG_OPTIONS_SECTION}]
     # listen = *:8080
     # allowed-hosts = 1.2.3.4,localhost
     # browser = true
@@ -676,20 +677,20 @@ class ConfigFileHandler:
     # report-level = 4
     '''
 
-    def __init__(self, config_file_path, opts_sect):
+    def __init__(self, config_file_path):
         self.config_file_path = config_file_path
-        self.opts_section = opts_sect
+        self.opts_section = self.CONFIG_OPTIONS_SECTION
         self.parser = configparser.ConfigParser()
 
     def create_config_file(self):
-        """Create ~/{config_file_name} if not exists
+        """Create the configuration file if it doesn't exist already.
 
         CONFIG_FILE_TEMPLATE is the content of the file created
         """
         if not self.config_file_path.exists():
             self.config_file_path.parent.mkdir(parents=True, exist_ok=True)
             self.config_file_path.write_text(
-                textwrap.dedent(ConfigFileHandler.CONFIG_FILE_TEMPLATE))
+                textwrap.dedent(self.CONFIG_FILE_TEMPLATE))
 
     def read_opts(self):
         """Read config options from file if exists
@@ -823,7 +824,7 @@ def main():
         action=argparse.BooleanOptionalAction)
     cli_opts = parser.parse_args(sys.argv[1:])
 
-    cf_handler = ConfigFileHandler(CONFIG_FILE_PATH, CONFIG_OPTIONS_SECTION)
+    cf_handler = ConfigFileHandler(CONFIG_FILE_PATH)
     cf_handler.create_config_file()
     config_file_opts = cf_handler.read_opts()
     opts = argparse.Namespace(

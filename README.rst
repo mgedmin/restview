@@ -15,7 +15,7 @@ while you're editing it.
 You can also pass the name of a directory, and restview will recursively
 look for files that end in .txt or .rst and present you with a list.
 
-restveiw will try to read default config options from ~/.config/restview/restview.ini
+restview will try to read default config options from ~/.config/restview/restview.ini
 (if exists), so you can customize your options persistently.
 
 Finally, you can make sure your Python package has valid ReStructuredText

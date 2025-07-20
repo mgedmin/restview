@@ -1000,7 +1000,6 @@ class TestCofigFileHandler(unittest.TestCase):
     def setUp(self):
         self.cfh = ConfigFileHandler(
             config_file_path=Path('some-arbitrary-path'),
-            opts_sect='DEFAULT'
         )
 
     def test_create_config_if_file_exists(self):
