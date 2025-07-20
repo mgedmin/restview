@@ -1047,7 +1047,7 @@ class TestCofigFileHandler(unittest.TestCase):
 
     def test_read_config_valid_all_options(self):
         config_data = f"""
-        [{self.cfh.opts_section}]
+        [{self.cfh.CONFIG_OPTS_SECT}]
         css= hi, hello , world
         pypi-strict=True
         halt-level = 3

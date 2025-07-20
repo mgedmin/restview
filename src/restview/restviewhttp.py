@@ -658,14 +658,14 @@ def launch_browser(url):
 class ConfigFileHandler:
     """Creates config files and reads default options"""
 
-    CONFIG_OPTIONS_SECTION = 'restview'
+    CONFIG_OPTS_SECT = 'restview'
 
     # Default template for newly-created config files
     # Contains commented out sample key/value option pairs
     CONFIG_FILE_TEMPLATE = f'''\
     # for options description, refer to the original docs at
     # https://github.com/mgedmin/restview?tab=readme-ov-file#synopsis
-    [{CONFIG_OPTIONS_SECTION}]
+    [{CONFIG_OPTS_SECT}]
     # listen = *:8080
     # allowed-hosts = 1.2.3.4,localhost
     # browser = true
@@ -679,7 +679,6 @@ class ConfigFileHandler:
 
     def __init__(self, config_file_path):
         self.config_file_path = config_file_path
-        self.opts_section = self.CONFIG_OPTIONS_SECTION
         self.parser = configparser.ConfigParser()
 
     def create_config_file(self):
@@ -705,23 +704,23 @@ class ConfigFileHandler:
                 self.parser.read_file(config_file)
                 config = {
                     'listen': self.parser.get(
-                        self.opts_section, 'listen', fallback=None),
+                        self.CONFIG_OPTS_SECT, 'listen', fallback=None),
                     'allowed_hosts': self.parser.get(
-                        self.opts_section, 'allowed-hosts', fallback=None),
+                        self.CONFIG_OPTS_SECT, 'allowed-hosts', fallback=None),
                     'halt_level': self.parser.getint(
-                        self.opts_section, 'halt-level', fallback=None),
+                        self.CONFIG_OPTS_SECT, 'halt-level', fallback=None),
                     'report_level': self.parser.getint(
-                        self.opts_section, 'report-level', fallback=None),
+                        self.CONFIG_OPTS_SECT, 'report-level', fallback=None),
                     'browser': self.parser.getboolean(
-                        self.opts_section, 'browser', fallback=None),
+                        self.CONFIG_OPTS_SECT, 'browser', fallback=None),
                     'long_description': self.parser.getboolean(
-                        self.opts_section, 'long-description', fallback=None),
+                        self.CONFIG_OPTS_SECT, 'long-description', fallback=None),
                     'pypi_strict': self.parser.getboolean(
-                        self.opts_section, 'pypi-strict', fallback=None),
+                        self.CONFIG_OPTS_SECT, 'pypi-strict', fallback=None),
                     'stylesheets': ConfigFileHandler.csvs_to_list(self.parser.get(
-                        self.opts_section, 'css', fallback=None)),
+                        self.CONFIG_OPTS_SECT, 'css', fallback=None)),
                     'watch': ConfigFileHandler.csvs_to_list(self.parser.get(
-                        self.opts_section, 'watch', fallback=None)),
+                        self.CONFIG_OPTS_SECT, 'watch', fallback=None)),
                 }
                 return {k: v for k, v in config.items() if v is not None}
         except FileNotFoundError:
