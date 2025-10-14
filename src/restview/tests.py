@@ -1,15 +1,20 @@
+import configparser
 import doctest
 import errno
 import os
 import socket
+import sys
+import textwrap
 import unittest
 import webbrowser
 from io import StringIO
-from unittest.mock import Mock, patch
+from pathlib import Path
+from unittest.mock import Mock, mock_open, patch
 
 import docutils.utils
 
 from restview.restviewhttp import (
+    ConfigFileHandler,
     MyRequestHandler,
     RestViewer,
     get_host_name,
@@ -989,6 +994,132 @@ class TestMain(unittest.TestCase):
     def test_custom_css_file(self):
         self.run_main('.', '--css', 'my.css',
                       serve_called=True, browser_launched=True)
+
+
+class TestCofigFileHandler(unittest.TestCase):
+    def setUp(self):
+        self.cfh = ConfigFileHandler(
+            config_file_path=Path('some-arbitrary-path'),
+        )
+
+    def test_create_config_if_file_exists(self):
+        self.cfh.config_file_path = Mock(spec_set=Path)
+        self.cfh.config_file_path.exists.return_value = True
+        self.cfh.create_config_file()
+        self.cfh.config_file_path.exists.assert_called_once()
+        self.cfh.config_file_path.write_text.assert_not_called()
+
+    def test_create_config_if_file_not_exists(self):
+        self.cfh.config_file_path = Mock(spec_set=Path)
+        self.cfh.config_file_path.exists.return_value = False
+        self.cfh.create_config_file()
+        self.cfh.config_file_path.exists.assert_called_once()
+        self.cfh.config_file_path.write_text.assert_called_once_with(
+            textwrap.dedent(ConfigFileHandler.CONFIG_FILE_TEMPLATE))
+
+    def test_read_config_file_not_found(self):
+        with patch('builtins.print') as m_print:
+            with patch('builtins.open', new_callable=mock_open) as m_open:
+                m_open.side_effect = FileNotFoundError
+                result = self.cfh.read_opts()
+                m_open.assert_called_once_with(self.cfh.config_file_path)
+                m_print.assert_not_called()
+                self.assertDictEqual(result, {})
+
+    def test_read_config_empty_file(self):
+        with patch('builtins.open', new_callable=mock_open, read_data='') as m_open:
+            result = self.cfh.read_opts()
+            m_open.assert_called_once_with(self.cfh.config_file_path)
+            self.assertDictEqual(result, {})
+
+    def test_read_config_invalid_syntax(self):
+        with patch('builtins.print') as m_print:
+            with patch('builtins.open', new_callable=mock_open,
+                       read_data='invalid syntax') as m_open:
+                with patch.object(self.cfh.parser, 'read_file',
+                                  side_effect=configparser.Error('No sections exist!')):
+                    result = self.cfh.read_opts()
+                    msg = (f"Error: could not read options from config file {self.cfh.config_file_path}, "
+                           "only provided CLI options will be considered:\nNo sections exist!")
+                    m_open.assert_called_once_with(self.cfh.config_file_path)
+                    m_print.assert_called_once_with(msg, file=sys.stderr)
+                    self.assertDictEqual(result, {})
+
+    def test_read_config_valid_all_options(self):
+        config_data = f"""
+        [{self.cfh.CONFIG_OPTS_SECT}]
+        css= hi, hello , world
+        pypi-strict=True
+        halt-level = 3
+        listen =8080
+        long-description = TRUE
+        browser = false
+        report-level = 3
+        """
+        expected = {
+            'stylesheets': [
+                'hi',
+                'hello',
+                'world',
+            ],
+            'pypi_strict': True,
+            'browser': False,
+            'long_description': True,
+            'halt_level': 3,
+            'listen': '8080',
+            'report_level': 3,
+        }
+        with patch('builtins.open', new_callable=mock_open,
+                   read_data=config_data) as m_open:
+            result = self.cfh.read_opts()
+            m_open.assert_called_once_with(self.cfh.config_file_path)
+            self.assertDictEqual(result, expected)
+
+    def test_join_opts(self):
+        cli_opts = {
+            'listen': None,
+            'allowed_hosts': ['localhost', '127.0.0.1'],
+            'pypi_strict': True,
+            'stylesheets': [],
+            'browser': False,
+        }
+        config_opts = {
+            'listen': '8080',
+            'pypi_strict': False,
+            'browser': True,
+        }
+        opts = ConfigFileHandler.join_opts(cli_opts, config_opts)
+        expected = {
+            'stylesheets': [],
+            'allowed_hosts': ['localhost', '127.0.0.1'],
+            'listen': '8080',
+            'report_level': 2,
+            'pypi_strict': True,
+            'browser': False,
+        }
+        self.assertDictEqual(opts, expected)
+
+    def test_join_opts_with_report_level(self):
+        cli_opts = {
+            'listen': None,
+            'allowed_hosts': ['localhost', '127.0.0.1'],
+            'pypi_strict': False,
+            'stylesheets': [],
+        }
+        config_opts = {
+            'listen': '8080',
+            'pypi_strict': True,
+            'report_level': 4,
+        }
+        opts = ConfigFileHandler.join_opts(cli_opts, config_opts)
+        expected = {
+            'stylesheets': [],
+            'allowed_hosts': ['localhost', '127.0.0.1'],
+            'listen': '8080',
+            'report_level': 4,
+            'pypi_strict': False,
+        }
+        self.assertDictEqual(opts, expected)
 
 
 def grep(needle, haystack):

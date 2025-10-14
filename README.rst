@@ -15,6 +15,9 @@ while you're editing it.
 You can also pass the name of a directory, and restview will recursively
 look for files that end in .txt or .rst and present you with a list.
 
+restview will try to read default config options from ~/.config/restview/restview.ini
+(if exists), so you can customize your options persistently.
+
 Finally, you can make sure your Python package has valid ReStructuredText
 in the long_description field by using ::
 
@@ -62,6 +65,7 @@ Usage: ``restview [options] filename-or-directory [...]``
 --strict              halt at the slightest problem; equivalent to --halt-
                       level=2
 --pypi-strict         enable additional restrictions that PyPI performs
+--no-pypi-strict      disable additional restrictions that PyPI performs
 
 
 Installation
