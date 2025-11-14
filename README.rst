@@ -2,7 +2,7 @@
 restview
 ========
 
-|buildstatus|_ |appveyor|_ |coverage|_
+|buildstatus|_ |coverage|_
 
 A viewer for ReStructuredText documents that renders them on the fly.
 
@@ -67,23 +67,15 @@ Usage: ``restview [options] filename-or-directory [...]``
 Installation
 ============
 
-On .deb based systems (e.g. Ubuntu) ::
+Use a Python command-line tool installer like pipx_ or uv_ ::
 
-  sudo apt-get install python-pip
-  sudo pip install restview
+  uv tool install restview
 
-On .rpm based systems (e.g. Fedora) ::
-
-  su
-  yum install python-pip
-  pip install restview
-
+.. _pipx: https://pypi.org/project/pipx/
+.. _uv: https://pypi.org/project/uv/
 
 .. |buildstatus| image:: https://github.com/mgedmin/restview/actions/workflows/build.yml/badge.svg?branch=master
 .. _buildstatus: https://github.com/mgedmin/restview/actions
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/mgedmin/restview?branch=master&svg=true
-.. _appveyor: https://ci.appveyor.com/project/mgedmin/restview
 
 .. |coverage| image:: https://coveralls.io/repos/mgedmin/restview/badge.svg?branch=master
 .. _coverage: https://coveralls.io/r/mgedmin/restview
