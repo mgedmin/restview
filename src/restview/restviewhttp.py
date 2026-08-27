@@ -2,6 +2,7 @@
 HTTP-based ReStructuredText viewer.
 """
 import argparse
+import configparser
 import fnmatch
 import http.server
 import os
@@ -10,10 +11,12 @@ import socket
 import socketserver
 import subprocess
 import sys
+import textwrap
 import threading
 import time
 import webbrowser
 from html import escape
+from pathlib import Path
 from urllib.parse import parse_qs, unquote
 
 import docutils.core
@@ -24,6 +27,9 @@ from pygments import formatters, lexers
 
 
 __version__ = '3.0.3.dev0'
+
+
+CONFIG_FILE_PATH = Path('~/.config/restview/restview.ini').expanduser()
 
 
 # If restview is ever packaged for Debian, this'll likely be changed to
@@ -649,6 +655,107 @@ def launch_browser(url):
     t.start()
 
 
+class ConfigFileHandler:
+    """Creates config files and reads default options"""
+
+    CONFIG_OPTS_SECT = 'restview'
+
+    # Default template for newly-created config files
+    # Contains commented out sample key/value option pairs
+    CONFIG_FILE_TEMPLATE = f'''\
+    # for options description, refer to the original docs at
+    # https://github.com/mgedmin/restview?tab=readme-ov-file#synopsis
+    [{CONFIG_OPTS_SECT}]
+    # listen = *:8080
+    # allowed-hosts = 1.2.3.4,localhost
+    # browser = true
+    # watch = file1.rst,file2.rst,file3.rst
+    # long-description = true
+    # css = sheet1.css,sheet2.css
+    # pypi-strict = false
+    # halt-level = 2
+    # report-level = 4
+    '''
+
+    def __init__(self, config_file_path):
+        self.config_file_path = config_file_path
+        self.parser = configparser.ConfigParser()
+
+    def create_config_file(self):
+        """Create the configuration file if it doesn't exist already.
+
+        CONFIG_FILE_TEMPLATE is the content of the file created
+        """
+        if not self.config_file_path.exists():
+            self.config_file_path.parent.mkdir(parents=True, exist_ok=True)
+            self.config_file_path.write_text(
+                textwrap.dedent(self.CONFIG_FILE_TEMPLATE))
+
+    def read_opts(self):
+        """Read config options from file if exists
+
+        Coerces values into Python types, comma-separated items into lists
+        Result only contains uncommented options (no option=None by default)
+        Config file errors are non-fatal, handled to resume normal execution
+        """
+
+        try:
+            with open(self.config_file_path) as config_file:
+                self.parser.read_file(config_file)
+                config = {
+                    'listen': self.parser.get(
+                        self.CONFIG_OPTS_SECT, 'listen', fallback=None),
+                    'allowed_hosts': self.parser.get(
+                        self.CONFIG_OPTS_SECT, 'allowed-hosts', fallback=None),
+                    'halt_level': self.parser.getint(
+                        self.CONFIG_OPTS_SECT, 'halt-level', fallback=None),
+                    'report_level': self.parser.getint(
+                        self.CONFIG_OPTS_SECT, 'report-level', fallback=None),
+                    'browser': self.parser.getboolean(
+                        self.CONFIG_OPTS_SECT, 'browser', fallback=None),
+                    'long_description': self.parser.getboolean(
+                        self.CONFIG_OPTS_SECT, 'long-description', fallback=None),
+                    'pypi_strict': self.parser.getboolean(
+                        self.CONFIG_OPTS_SECT, 'pypi-strict', fallback=None),
+                    'stylesheets': ConfigFileHandler.csvs_to_list(self.parser.get(
+                        self.CONFIG_OPTS_SECT, 'css', fallback=None)),
+                    'watch': ConfigFileHandler.csvs_to_list(self.parser.get(
+                        self.CONFIG_OPTS_SECT, 'watch', fallback=None)),
+                }
+                return {k: v for k, v in config.items() if v is not None}
+        except FileNotFoundError:
+            pass
+        except configparser.Error as e:
+            print(f'Error: could not read options from config file {self.config_file_path}, '
+                  f'only provided CLI options will be considered:\n{e}',
+                  file=sys.stderr)
+        return {}
+
+    @classmethod
+    def join_opts(cls, cli_opts, config_opts):
+        """Join dictionaries containing CLI & config options
+
+        CLI options override config options if provided (left joined)
+        """
+        opts = dict(config_opts)
+        opts.update({k: v for k, v in cli_opts.items()
+                    if k not in opts or v not in (None, [], '')})
+        # --report-level should default to 2 if not provided
+        if not opts.get('report_level'):
+            opts['report_level'] = 2
+        if not opts.get('pypi_strict'):
+            opts['pypi_strict'] = False
+        return opts
+
+    @classmethod
+    def csvs_to_list(cls, csvs):
+        """Split comma-separated values into a list"""
+        if csvs is None:
+            return None
+        delimiter_pattern = r'\s*,\s*'
+        return re.split(delimiter_pattern, csvs)
+
+
 def main():
     parser = argparse.ArgumentParser(
                     usage="%(prog)s [options] root [...]",
@@ -697,7 +804,7 @@ def main():
         help='''set the "report_level" option of docutils; restview
             will report system messages at or above this level (1=info,
             2=warnings, 3=errors, 4=severe)''',
-        type=int, default=2)
+        type=int, default=None)
     halt_level_group = parser.add_mutually_exclusive_group()
     halt_level_group.add_argument(
         '--halt-level',
@@ -713,8 +820,15 @@ def main():
     parser.add_argument(
         '--pypi-strict',
         help='enable additional restrictions that PyPI performs',
-        action='store_true', default=False)
-    opts = parser.parse_args(sys.argv[1:])
+        action=argparse.BooleanOptionalAction)
+    cli_opts = parser.parse_args(sys.argv[1:])
+
+    cf_handler = ConfigFileHandler(CONFIG_FILE_PATH)
+    cf_handler.create_config_file()
+    config_file_opts = cf_handler.read_opts()
+    opts = argparse.Namespace(
+        **cf_handler.join_opts(vars(cli_opts), config_file_opts))
+
     args = opts.root
     if opts.long_description:
         opts.execute = 'python setup.py --long-description'
