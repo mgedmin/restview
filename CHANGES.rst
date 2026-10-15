@@ -4,7 +4,7 @@ Changelog
 3.0.3 (unreleased)
 ------------------
 
-- Add support for Python 3.14.
+- Add support for Python 3.14 and 3.15.
 
 - Drop support for Python 3.7, 3.8, and 3.9.
 
