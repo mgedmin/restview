@@ -971,6 +971,21 @@ class TestMain(unittest.TestCase):
                 self.run_main('-l', '0.0.0.0:8080', '.',
                               serve_called=True, browser_launched=False)
 
+    def test_listen_on_star_opens_up_allowed_hosts(self):
+        created = []
+        real_init = RestViewer.__init__
+
+        def capture_init(self, *args, **kwargs):
+            real_init(self, *args, **kwargs)
+            created.append(self)
+
+        with patch.object(RestViewer, '__init__', capture_init):
+            with patch.object(RestViewer, 'listen', return_value=8080):
+                with patch.object(RestViewer, 'close'):
+                    self.run_main('-l', '*:8080', '.',
+                                  serve_called=True, browser_launched=False)
+        self.assertEqual(created[0].allowed_hosts, ['*'])
+
     def test_specify_invalid_listen_address(self):
         stdout, stderr = self.run_main('-l', 'nonsense', '.', rc=2)
         self.assertEqual(stderr.splitlines()[-1],
