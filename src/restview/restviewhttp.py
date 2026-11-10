@@ -745,7 +745,7 @@ def main():
             parser.error(str(e))
     if opts.allowed_hosts:
         server.allowed_hosts = opts.allowed_hosts.replace(',', ' ').split()
-    elif server.local_address[0] in ('*', '0', '0.0.0.0'):
+    elif server.local_address[0] in ('', '*', '0', '0.0.0.0'):
         server.allowed_hosts = ['*']
     host = get_host_name(server.local_address[0])
     port = server.listen()
